@@ -1,4 +1,5 @@
-import { apiPrefix } from '@/config'
+import { apiPrefix, httpCode } from '@/config'
+import { Message } from '@arco-design/web-vue'
 
 // 超时时间为100秒
 const TIME_OUT = 100000
@@ -73,10 +74,17 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
     new Promise((resolve, reject) => {
       globalThis
         .fetch(urlWithPrefix, options as RequestInit)
-        .then((res) => {
-          resolve(res.json())
+        .then(async (res) => {
+          const json = await res.json()
+          if (json.code === httpCode.success) {
+            resolve(json)
+          } else {
+            Message.error(json.message)
+            reject(new Error(json.message))
+          }
         })
         .catch((err) => {
+          Message.error(err.message)
           reject(err)
         })
     }),

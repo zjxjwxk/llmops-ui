@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Message } from '@arco-design/web-vue'
-import { post } from '@/utils/request.ts'
+import { debugApp } from '@/services/app.ts'
+import { useRoute } from 'vue-router'
 
 // 定义交互所需数据
+const route = useRoute()
 const query = ref('')
 const messages = ref([] as { role: string; content: string }[])
 const isLoading = ref(false)
@@ -28,32 +30,32 @@ const send = async () => {
     return
   }
 
-  // 发送用户输入的消息
-  messages.value.push({
-    role: 'human',
-    content: humanQuery,
-  })
+  try {
+    // 将用户消息加入消息数组
+    messages.value.push({
+      role: 'human',
+      content: humanQuery,
+    })
 
-  // 清空输入框
-  query.value = ''
+    // 清空输入框
+    query.value = ''
 
-  // 设置加载状态
-  isLoading.value = true
+    // 设置加载状态
+    isLoading.value = true
 
-  // 发起API请求
-  const response = await post('/apps/66d2fc17-a0bb-4401-9161-28b2d4151871/debug', {
-    body: { query: humanQuery },
-  })
-  const aiMessage = response.data.content
+    // 发起API请求
+    const response = await debugApp(route.params.app_id as string, humanQuery)
+    const aiMessage = response.data.content
 
-  // 将AI返回的消息加入消息数组
-  messages.value.push({
-    role: 'ai',
-    content: aiMessage,
-  })
-
-  // 清除加载状态
-  isLoading.value = false
+    // 将AI返回的消息加入消息数组
+    messages.value.push({
+      role: 'ai',
+      content: aiMessage,
+    })
+  } finally {
+    // 清除加载状态
+    isLoading.value = false
+  }
 }
 </script>
 
