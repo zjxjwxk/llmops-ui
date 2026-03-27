@@ -1,4 +1,61 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Message } from '@arco-design/web-vue'
+import { post } from '@/utils/request.ts'
+
+// 定义交互所需数据
+const query = ref('')
+const messages = ref([] as { role: string; content: string }[])
+const isLoading = ref(false)
+
+// 消息清除方法
+const clearMessages = () => {
+  messages.value = []
+}
+
+// 消息发送方法
+const send = async () => {
+  // 获取用户输入的消息，并校验是否为空
+  const humanQuery = query.value
+  if (!humanQuery) {
+    Message.error('输入消息不能为空')
+    return
+  }
+
+  // 上一条消息还在处理中，不允许发送新的请求
+  if (isLoading.value) {
+    Message.warning('上一条消息还在处理中，请稍等')
+    return
+  }
+
+  // 发送用户输入的消息
+  messages.value.push({
+    role: 'human',
+    content: humanQuery,
+  })
+
+  // 清空输入框
+  query.value = ''
+
+  // 设置加载状态
+  isLoading.value = true
+
+  // 发起API请求
+  const response = await post('/apps/66d2fc17-a0bb-4401-9161-28b2d4151871/debug', {
+    body: { query: humanQuery },
+  })
+  const aiMessage = response.data.content
+
+  // 将AI返回的消息加入消息数组
+  messages.value.push({
+    role: 'ai',
+    content: aiMessage,
+  })
+
+  // 清除加载状态
+  isLoading.value = false
+}
+</script>
 
 <template>
   <!-- 最外层容器，高度撑满整个浏览器屏幕 -->
@@ -29,39 +86,53 @@
         <!-- 调试对话界面 -->
         <div class="h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none">
           <!-- 人类消息 -->
-          <div class="flex flex-row gap-2 mb-6">
-            <!-- 头像 -->
-            <a-avatar :style="{ background: '#3370ff' }" class="flex-shrink-0" :size="30"
+          <div class="flex flex-row gap-2 mb-6" v-for="message in messages" :key="message.content">
+            <!-- 人类头像 -->
+            <a-avatar
+              v-if="message.role === 'human'"
+              :style="{ background: '#3370ff' }"
+              class="flex-shrink-0"
+              :size="30"
               >Wu</a-avatar
             >
-            <!-- 消息 -->
-            <div class="flex flex-col gap-2">
-              <div class="font-semibold text-gray-700">Xinkang</div>
-              <div
-                class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
-              >
-                你好，你是谁？
-              </div>
-            </div>
-          </div>
-          <!-- AI消息 -->
-          <div class="flex flex-row gap-2 mb-6">
-            <!-- 头像 -->
-            <a-avatar :style="{ background: '#00d0b6' }" class="flex-shrink-0" :size="30">
+            <!-- AI头像 -->
+            <a-avatar v-else :style="{ background: '#00d0b6' }" class="flex-shrink-0" :size="30">
               <icon-apps />
             </a-avatar>
-            <!-- 消息 -->
+            <!-- 发送方和消息框 -->
             <div class="flex flex-col gap-2">
-              <div class="font-semibold text-gray-700">AI应用</div>
+              <!-- 发送方名称 -->
+              <div class="font-semibold text-gray-700">
+                {{ message.role === 'human' ? 'Xinkang' : 'AI应用' }}
+              </div>
+              <!-- 人类消息框 -->
               <div
+                v-if="message.role === 'human'"
+                class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
+              >
+                {{ message.content }}
+              </div>
+              <!-- AI消息框 -->
+              <div
+                v-else
                 class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
               >
-                你好！我是一个由Google训练的大型语言模型我的主要职责是理解并回应你的指令和问题，提供信息、生成不同类型的创意文本、进行翻译、总结内容以及协助你完成各种语言相关的任务；我没有个人身份、意识、情感或身体，也无法拥有真实的个人经历或记忆；我是一个复杂的计算机程序，通过分析和学习海量的文本和代码数据来运作，以便预测和生成连贯、相关且有用的回复；我的核心目标是尽可能地为你提供帮助，确保我的回应是有益的、准确的和无害的；我持续学习和改进，以更好地服务于各种复杂的交流需求。
+                {{ message.content }}
               </div>
             </div>
           </div>
+          <!-- 消息为空时，默认展示应用icon和名称 -->
+          <div
+            v-if="!messages.length"
+            class="mt-[200px] flex flex-col items-center justify-center gap-2"
+          >
+            <a-avatar :size="70" shape="square" :style="{ background: '#00d0b6' }">
+              <icon-apps />
+            </a-avatar>
+            <div class="text-2xl font-semibold text-gray-900">AI 应用</div>
+          </div>
           <!-- AI加载状态 -->
-          <div class="flex flex-row gap-2 mb-6">
+          <div v-if="isLoading" class="flex flex-row gap-2 mb-6">
             <!-- 头像 -->
             <a-avatar :style="{ background: '#00d0b6' }" class="flex-shrink-0" :size="30">
               <icon-apps />
@@ -82,22 +153,25 @@
           <!-- 顶部输入框 -->
           <div class="px-6 flex items-center gap-4">
             <!-- 清除按钮 -->
-            <a-button class="flex-shrink-0" type="text" shape="circle">
+            <a-button class="flex-shrink-0" type="text" shape="circle" @click="clearMessages">
               <template #icon>
                 <icon-empty size="16" :style="{ color: '#374151' }" />
               </template>
             </a-button>
-            <!-- 输入框 -->
+            <!-- 输入框组件 -->
             <div
               class="h-[50px] flex items-center gap-2 px-4 flex-1 border border-gray-200 rounded-full"
             >
-              <input type="text" class="flex-1 outline-0" />
+              <!-- 输入框 -->
+              <input type="text" class="flex-1 outline-0" v-model="query" @keyup.enter="send" />
+              <!-- 上传文件按钮 -->
               <a-button type="text" shape="circle">
                 <template #icon>
                   <icon-plus-circle size="16" :style="{ color: '#374151' }" />
                 </template>
               </a-button>
-              <a-button type="text" shape="circle">
+              <!-- 消息发送按钮 -->
+              <a-button type="text" shape="circle" @click="send">
                 <template #icon>
                   <icon-send size="16" :style="{ color: '#1d4ed8' }" />
                 </template>
