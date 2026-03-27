@@ -105,7 +105,9 @@
             </div>
           </div>
           <!-- 底部提示文字 -->
-          <div class="text-center text-gray-500 text-xs py-4"></div>
+          <div class="text-center text-gray-500 text-xs py-4">
+            内容由AI生成，无法确保真实准确，仅供参考。
+          </div>
         </div>
       </div>
     </div>
