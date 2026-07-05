@@ -34,7 +34,7 @@ const route = useRoute()
             创建AI应用
           </a-button>
           <!--侧边栏导航-->
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2 mt-2">
             <router-link
               to="/home"
               class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200"
@@ -120,4 +120,16 @@ const route = useRoute()
   </a-layout>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(a.flex) {
+  gap: 0.5rem !important;
+}
+
+:deep(a.flex:hover) {
+  background-color: rgb(229 231 235) !important;
+}
+
+:deep(.arco-btn) {
+  border-radius: 0.5rem !important;
+}
+</style>
