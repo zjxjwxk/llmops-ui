@@ -1,26 +1,97 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { getApiToolProvidersWithPage } from '@/services/api-tool.ts'
-import { apiPrefix, typeMap } from '@/config'
+import { typeMap } from '@/config'
 import moment from 'moment/moment'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const providers = reactive<Array<any>>([])
+const paginator = reactive({
+  current_page: 1,
+  page_size: 10,
+  total_page: 0,
+  total_record: 0,
+})
 const shownIndex = ref<number>(-1)
 const loading = ref<boolean>(false)
 
-onMounted(async () => {
+const loadMoreData = async (init: boolean = false) => {
+  // 检查是否需要加载更多分页数据
+  if (!init && paginator.current_page > paginator.total_page) {
+    return
+  }
+
   try {
     loading.value = true
-    const resp = await getApiToolProvidersWithPage()
-    Object.assign(providers, resp.data.list)
+    // 获取分页数据
+    const resp = await getApiToolProvidersWithPage(
+      paginator.current_page,
+      paginator.page_size,
+      String(route.query?.search_word ?? ''),
+    )
+    const data = resp.data
+
+    // 更新分页信息
+    paginator.current_page = data.paginator.current_page
+    paginator.page_size = data.paginator.page_size
+    paginator.total_page = data.paginator.total_page
+    paginator.total_record = data.paginator.total_record
+
+    // 更新当前页为下一页
+    if (paginator.current_page <= paginator.total_page) {
+      paginator.current_page += 1
+    }
+
+    // 初始化或增加提供商数据
+    if (init) {
+      providers.splice(0, providers.length, ...data.list)
+    } else {
+      providers.push(...data.list)
+    }
   } finally {
     loading.value = false
   }
+}
+
+const handleScroll = (event) => {
+  // 获取滚动距离、可滚动的最大距离、客户端/浏览器窗口的高度
+  const { scrollTop, scrollHeight, clientHeight } = event.target
+
+  // 判断是否滚动到底部
+  if (scrollTop + clientHeight >= scrollHeight - 10) {
+    if (loading.value) {
+      return
+    }
+    loadMoreData()
+  }
+}
+
+onMounted(async () => {
+  await loadMoreData(true)
 })
+
+watch(
+  () => route.query?.search_word,
+  () => {
+    // 初始化分页器
+    paginator.current_page = 1
+    paginator.page_size = 20
+    paginator.total_page = 0
+    paginator.total_record = 0
+
+    // 根据搜索词初始化数据
+    loadMoreData(true)
+  },
+)
 </script>
 
 <template>
-  <a-spin :loading="loading" class="block h-full w-hull">
+  <a-spin
+    :loading="loading"
+    class="block h-full w-hull scrollbar-w-none overflow-scroll"
+    @scroll="handleScroll"
+  >
     <!--底部插件列表-->
     <a-row :gutter="[20, 20]" class="flex-1">
       <!--有数据的UI状态-->
@@ -65,6 +136,20 @@ onMounted(async () => {
           description="没有可用的API插件"
           class="h-[400px] flex flex-col items-center justify-center"
         />
+      </a-col>
+    </a-row>
+    <!--加载器-->
+    <a-row v-if="providers.length > 0">
+      <!--加载数据中-->
+      <a-col v-if="paginator.current_page <= paginator.total_page" :span="24" align="center">
+        <a-space class="my-4">
+          <a-spin />
+          <div class="text-gray-400">加载中</div>
+        </a-space>
+      </a-col>
+      <!--数据加载完成-->
+      <a-col v-else :span="24" align="center">
+        <div class="text-gray-400 my-4">数据已加载完成</div>
       </a-col>
     </a-row>
     <!--插件卡片抽屉-->
