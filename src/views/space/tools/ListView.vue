@@ -54,9 +54,9 @@ const loadMoreData = async (init: boolean = false) => {
   }
 }
 
-const handleScroll = (event) => {
+const handleScroll = (event: UIEvent) => {
   // 获取滚动距离、可滚动的最大距离、客户端/浏览器窗口的高度
-  const { scrollTop, scrollHeight, clientHeight } = event.target
+  const { scrollTop, scrollHeight, clientHeight } = event.target as HTMLElement
 
   // 判断是否滚动到底部
   if (scrollTop + clientHeight >= scrollHeight - 10) {
@@ -71,6 +71,7 @@ onMounted(async () => {
   await loadMoreData(true)
 })
 
+// 监听路由中的搜索词
 watch(
   () => route.query?.search_word,
   () => {
