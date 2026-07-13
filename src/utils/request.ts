@@ -102,3 +102,11 @@ export const get = <T>(url: string, options = {}) => {
 export const post = <T>(url: string, options = {}) => {
   return request<T>(url, Object.assign({}, options, { method: 'POST' }))
 }
+
+export const del = <T>(url: string, options = {}) => {
+  return request<T>(url, Object.assign({}, options, { method: 'DELETE' }))
+}
+
+export const put = <T>(url: string, options = {}) => {
+  return request<T>(url, Object.assign({}, options, { method: 'PUT' }))
+}
