@@ -561,7 +561,13 @@ watch(
             </div>
             <a-space :size="16">
               <a-button class="!rounded-lg" @click="handleCancel">取消</a-button>
-              <a-button :loading="submitLoading" type="primary" html-type="submit" class="!rounded-lg">保存</a-button>
+              <a-button
+                :loading="submitLoading"
+                type="primary"
+                html-type="submit"
+                class="!rounded-lg"
+                >保存</a-button
+              >
             </a-space>
           </div>
         </a-form>
