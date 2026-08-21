@@ -1,4 +1,4 @@
-import { del, get, post, put } from '@/utils/request.ts'
+import { get, post } from '@/utils/request.ts'
 import type {
   CreateApiToolProviderRequest,
   GetApiToolProviderResponse,
@@ -32,12 +32,12 @@ export const createApiToolProvider = (req: CreateApiToolProviderRequest) => {
 
 // 删除自定义API工具提供者
 export const deleteApiToolProvider = (provider_id: string) => {
-  return del<BaseResponse<any>>(`/api-tools/${provider_id}`)
+  return post<BaseResponse<any>>(`/api-tools/${provider_id}/delete`)
 }
 
 // 更新自定义API工具提供者
 export const updateApiToolProvider = (provider_id: string, req: UpdateApiToolProviderRequest) => {
-  return put<BaseResponse<any>>(`/api-tools/${provider_id}`, { body: req })
+  return post<BaseResponse<any>>(`/api-tools/${provider_id}`, { body: req })
 }
 
 // 获取自定义API工具提供者

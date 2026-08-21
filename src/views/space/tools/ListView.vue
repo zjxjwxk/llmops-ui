@@ -11,7 +11,8 @@ import {
 import { typeMap } from '@/config'
 import moment from 'moment/moment'
 import { useRoute } from 'vue-router'
-import { Message, Modal } from '@arco-design/web-vue'
+import { Form, Message, Modal, ValidatedError } from '@arco-design/web-vue'
+import type { CreateApiToolProviderRequest } from '@/models/api-tool.ts'
 
 const route = useRoute()
 const props = defineProps({
@@ -32,9 +33,9 @@ const form = reactive({
   icon: 'https://picsum.photos/400',
   name: '',
   openapi_schema: '',
-  headers: [],
+  headers: [] as { key: string; value: string }[],
 })
-const formRef = ref(null)
+const formRef = ref<InstanceType<typeof Form>>(null)
 const shownIndex = ref<number>(-1)
 const loading = ref<boolean>(false)
 const showUpdateModal = ref<boolean>(false)
@@ -70,7 +71,7 @@ const tools = computed(() => {
 
     return available_tools
   } catch (e) {
-    console.log('解析OpenAPI Schema异常')
+    console.log('解析OpenAPI Schema异常：' + e)
   }
   return []
 })
@@ -188,7 +189,13 @@ const handleDelete = () => {
 }
 
 // 提交创建/编辑表单
-const handleSubmit = async ({ values, errors }) => {
+const handleSubmit = async ({
+  values,
+  errors,
+}: {
+  values: Record<string, any>
+  errors: Record<string, ValidatedError> | undefined
+}) => {
   if (errors) {
     return
   }
@@ -198,11 +205,14 @@ const handleSubmit = async ({ values, errors }) => {
 
     // 创建表单
     if (props.createType === 'tool') {
-      const resp = await createApiToolProvider(values)
+      const resp = await createApiToolProvider(values as CreateApiToolProviderRequest)
       Message.success(resp.message)
     } else if (showUpdateModal.value) {
       // 编辑表单
-      const resp = await updateApiToolProvider(providers[shownIndex.value]['id'], values)
+      const resp = await updateApiToolProvider(
+        providers[shownIndex.value]['id'],
+        values as CreateApiToolProviderRequest,
+      )
       Message.success(resp.message)
     }
 
