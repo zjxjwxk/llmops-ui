@@ -91,6 +91,91 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
   ]) as Promise<T>
 }
 
+// 封装基于POST的SSE(流式事件响应)请求
+export const ssePost = (
+  url: string,
+  fetchOptions: FetchOptionType,
+  onData: (data: { [key: string]: any }) => void,
+) => {
+  // 组装基础fetch请求配置
+  const options = Object.assign({}, baseFetchOptions, { method: 'POST' }, fetchOptions)
+
+  // 拼接URL
+  const urlWithPrefix = `${apiPrefix}${url.startsWith('/') ? url : `/${url}`}`
+
+  // 解构出body参数
+  const { body } = fetchOptions
+
+  // 将body转为json字符串
+  if (body) {
+    options.body = JSON.stringify(body)
+  }
+
+  // 发起fetch请求，并处理流式事件响应
+  globalThis.fetch(urlWithPrefix, options as RequestInit).then((response) => {
+    return handleStream(response, onData)
+  })
+}
+
+const handleStream = (response: Response, onData: (data: { [key: string]: any }) => void) => {
+  if (!response.ok) {
+    throw new Error('网络请求失败')
+  }
+
+  // 构建Reader和Decoder
+  const reader = response.body?.getReader()
+  const decoder = new TextDecoder('utf-8')
+
+  let buffer = ''
+  // 定义read函数读取流式事件响应数据
+  const read = () => {
+    let hasError = false
+    reader?.read().then((result: any) => {
+      if (result.done) {
+        return
+      }
+
+      buffer += decoder.decode(result.value, { stream: true })
+      const lines = buffer.split('\n')
+
+      let event = ''
+      let data = ''
+
+      try {
+        lines.forEach((line) => {
+          line = line.trim()
+          if (line.startsWith('event:')) {
+            event = line.slice(6).trim()
+          } else if (line.startsWith('data:')) {
+            data = line.slice(5).trim()
+          }
+
+          if (line === '') {
+            if (event !== '' && data !== '') {
+              onData({
+                event: event,
+                data: JSON.parse(data),
+              })
+              event = ''
+              data = ''
+            }
+          }
+        })
+        buffer = lines.pop() || ''
+      } catch (e) {
+        hasError = true
+      }
+
+      if (!hasError) {
+        read()
+      }
+    })
+  }
+
+  // 调用read函数读取流式事件响应数据
+  read()
+}
+
 export const request = <T>(url: string, options = {}) => {
   return baseFetch<T>(url, options)
 }
