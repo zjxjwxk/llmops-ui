@@ -43,14 +43,25 @@ const send = async () => {
     // 设置加载状态
     isLoading.value = true
 
-    // 发起API请求
-    const response = await debugApp(route.params.app_id as string, humanQuery)
-    const aiMessage = response.data.content
-
-    // 将AI返回的消息加入消息数组
     messages.value.push({
       role: 'ai',
-      content: aiMessage,
+      content: '',
+    })
+
+    await debugApp(route.params.app_id as string, humanQuery, (event_response) => {
+      // 提取流式事件响应数据
+      const event = event_response?.event
+      const data = event_response?.data
+
+      // 获取最后一条消息
+      const lastIndex = messages.value.length - 1
+      const message = messages.value[lastIndex]
+
+      // TODO: 目前仅处理agent_message事件
+      if (event === 'agent_message') {
+        const chunk_content = data?.data
+        messages.value[lastIndex].content = message.content + chunk_content
+      }
     })
   } finally {
     // 清除加载状态
@@ -120,6 +131,7 @@ const send = async () => {
                 class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
               >
                 {{ message.content }}
+                <div v-if="isLoading" class="cursor"></div>
               </div>
             </div>
           </div>
@@ -132,22 +144,6 @@ const send = async () => {
               <icon-apps />
             </a-avatar>
             <div class="text-2xl font-semibold text-gray-900">AI 应用</div>
-          </div>
-          <!-- AI加载状态 -->
-          <div v-if="isLoading" class="flex flex-row gap-2 mb-6">
-            <!-- 头像 -->
-            <a-avatar :style="{ background: '#00d0b6' }" class="flex-shrink-0" :size="30">
-              <icon-apps />
-            </a-avatar>
-            <!-- 消息 -->
-            <div class="flex flex-col gap-2">
-              <div class="font-semibold text-gray-700">AI应用</div>
-              <div
-                class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
-              >
-                <icon-loading />
-              </div>
-            </div>
           </div>
         </div>
         <!-- 调试对话输入框 -->
@@ -190,4 +186,24 @@ const send = async () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.cursor {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background-color: #444444;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
+/* 闪烁动画 */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1; /* 显示 */
+  }
+  50% {
+    opacity: 0; /* 隐藏 */
+  }
+}
+</style>

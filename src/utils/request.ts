@@ -92,7 +92,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
 }
 
 // 封装基于POST的SSE(流式事件响应)请求
-export const ssePost = (
+export const ssePost = async (
   url: string,
   fetchOptions: FetchOptionType,
   onData: (data: { [key: string]: any }) => void,
@@ -112,9 +112,8 @@ export const ssePost = (
   }
 
   // 发起fetch请求，并处理流式事件响应
-  globalThis.fetch(urlWithPrefix, options as RequestInit).then((response) => {
-    return handleStream(response, onData)
-  })
+  const response = await globalThis.fetch(urlWithPrefix, options as RequestInit)
+  return handleStream(response, onData)
 }
 
 const handleStream = (response: Response, onData: (data: { [key: string]: any }) => void) => {
