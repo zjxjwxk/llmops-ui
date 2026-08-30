@@ -59,7 +59,7 @@ const send = async () => {
 
       // TODO: 目前仅处理agent_message事件
       if (event === 'agent_message') {
-        const chunk_content = data?.data
+        const chunk_content = data?.answer
         messages.value[lastIndex].content = message.content + chunk_content
       }
     })
