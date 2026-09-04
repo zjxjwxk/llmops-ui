@@ -1,43 +1,8 @@
 <script setup lang="ts">
-// 页面DOM加载完毕时，初始化数据
-import { onMounted, reactive, ref, watch } from 'vue'
-import { getDatasetsWithPage } from '@/services/dataset.ts'
-import { useRoute } from 'vue-router'
 import moment from 'moment'
+import { useGetDatasetsWithPage } from '@/hooks/use-dataset.ts'
 
-const route = useRoute()
-const loading = ref(false)
-const datasets = reactive<Array<any>>([])
-
-const paginator = reactive({
-  current_page: 1,
-  page_size: 20,
-  total_page: 0,
-  total_record: 0,
-})
-
-onMounted(async () => {
-  await initData()
-})
-
-watch(
-  () => route.query?.search_word,
-  async () => {
-    await initData()
-  },
-)
-
-// 初始化数据
-const initData = async () => {
-  // 初始化分页器
-  paginator.current_page = 1
-  paginator.page_size = 20
-  paginator.total_page = 0
-  paginator.total_record = 0
-
-  // 调用接口加载数据
-  await loadMoreData(true)
-}
+const { loading, datasets, paginator, loadDatasets } = useGetDatasetsWithPage()
 
 // 根据滚动距离，加载更多分页数据
 const handleScroll = async (event: UIEvent) => {
@@ -49,48 +14,7 @@ const handleScroll = async (event: UIEvent) => {
     if (loading.value) {
       return
     }
-    await loadMoreData()
-  }
-}
-
-// 加载更多数据
-const loadMoreData = async (init: boolean = false) => {
-  // 检测是否需要加载数据
-  if (!init && paginator.current_page > paginator.total_page) {
-    return
-  }
-
-  // 加载更多数据
-  try {
-    // 调用接口获取数据
-    loading.value = true
-    const resp = await getDatasetsWithPage(
-      paginator.current_page,
-      paginator.page_size,
-      String(route.query?.search_word ?? ''),
-    )
-    const data = resp.data
-
-    // 更新分页器
-    paginator.current_page = data.paginator.current_page
-    paginator.page_size = data.paginator.page_size
-    paginator.total_page = data.paginator.total_page
-    paginator.total_record = data.paginator.total_record
-
-    // 判断是否存在更多数据
-    if (paginator.current_page <= paginator.total_page) {
-      paginator.current_page += 1
-    }
-
-    // 初始化则覆盖数据
-    if (init) {
-      datasets.splice(0, datasets.length, ...data.list)
-    } else {
-      // 否则追加数据
-      datasets.push(...data.list)
-    }
-  } finally {
-    loading.value = false
+    await loadDatasets()
   }
 }
 </script>
@@ -104,7 +28,7 @@ const loadMoreData = async (init: boolean = false) => {
     <!--底部知识库列表-->
     <a-row :gutter="[20, 20]" class="flex-1">
       <!--有数据的UI状态-->
-      <a-col v-for="(dataset, index) in datasets" :key="dataset.id" :span="6">
+      <a-col v-for="dataset in datasets" :key="dataset.id" :span="6">
         <a-card hoverable class="cursor-pointer rounded-lg">
           <!--顶部知识库名称-->
           <div class="flex items-center gap-3 mb-3">
