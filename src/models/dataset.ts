@@ -1,7 +1,7 @@
-// 获取知识库列表分页响应
-import type { BasePaginatorResponse } from '@/models/base.ts'
+import type { BasePaginatorResponse, BaseResponse } from '@/models/base.ts'
 
-export type GetDatasetsWithPageResp = BasePaginatorResponse<{
+// 获取知识库列表分页响应
+export type GetDatasetsWithPageResponse = BasePaginatorResponse<{
   id: string
   name: string
   icon: string
@@ -9,6 +9,34 @@ export type GetDatasetsWithPageResp = BasePaginatorResponse<{
   document_count: number
   character_count: number
   related_app_count: number
+  updated_at: number
+  created_at: number
+}>
+
+// 新增知识库请求
+export type CreateDatasetRequest = {
+  name: string
+  icon: string
+  description: string
+}
+
+// 更新知识库请求
+export type UpdateDatasetRequest = {
+  name: string
+  icon: string
+  description: string
+}
+
+// 获取知识库详情响应
+export type GetDatasetResponse = BaseResponse<{
+  id: string
+  name: string
+  icon: string
+  description: string
+  document_count: number
+  hit_count: number
+  related_app_count: number
+  character_count: number
   updated_at: number
   created_at: number
 }>

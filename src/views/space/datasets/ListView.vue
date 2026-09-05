@@ -1,8 +1,31 @@
 <script setup lang="ts">
 import moment from 'moment'
-import { useGetDatasetsWithPage } from '@/hooks/use-dataset.ts'
+import {
+  useCreateOrUpdateDataset,
+  useDeleteDataset,
+  useGetDatasetsWithPage,
+} from '@/hooks/use-dataset.ts'
+import { getDataset } from '@/services/dataset.ts'
+import { ValidatedError } from '@arco-design/web-vue'
 
+let updateDatasetID = ''
+const props = defineProps({
+  createType: {
+    type: String,
+    required: true,
+  },
+})
+const emits = defineEmits(['update-create-type'])
 const { loading, datasets, paginator, loadDatasets } = useGetDatasetsWithPage()
+const {
+  loading: submitLoading,
+  form,
+  formRef,
+  showUpdateModal,
+  updateShowUpdateModal,
+  saveDataset,
+} = useCreateOrUpdateDataset()
+const { handleDelete } = useDeleteDataset()
 
 // 根据滚动距离，加载更多分页数据
 const handleScroll = async (event: UIEvent) => {
@@ -16,6 +39,48 @@ const handleScroll = async (event: UIEvent) => {
     }
     await loadDatasets()
   }
+}
+
+// 处理更新知识库
+const handleUpdate = (dataset_id: string) => {
+  updateShowUpdateModal(true, async () => {
+    // 获取知识库详情
+    const resp = await getDataset(dataset_id)
+    const data = resp.data
+    updateDatasetID = dataset_id
+
+    // 更新表单数据
+    formRef.value?.resetFields()
+    form.icon = data.icon
+    form.name = data.name
+    form.description = data.description
+  })
+}
+
+// 取消显示模态窗
+const handleCancel = () => {
+  updateShowUpdateModal(false, async () => {
+    // 重置表单数据
+    updateDatasetID = ''
+    formRef.value?.resetFields()
+
+    // 隐藏表单模态窗
+    emits('update-create-type', '')
+  })
+}
+
+// 提交模态窗
+const handleSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | undefined }) => {
+  if (errors) {
+    return
+  }
+
+  // 调用创建知识库服务
+  await saveDataset(updateDatasetID)
+
+  // 关闭模态窗并刷新数据
+  handleCancel()
+  await loadDatasets(true)
 }
 </script>
 
@@ -57,8 +122,12 @@ const handleScroll = async (event: UIEvent) => {
                   </template>
                 </a-button>
                 <template #content>
-                  <a-doption>设置</a-doption>
-                  <a-doption class="!text-red-500">删除</a-doption>
+                  <a-doption @click="() => handleUpdate(dataset.id)">设置</a-doption>
+                  <a-doption
+                    class="!text-red-500"
+                    @click="handleDelete(dataset.id, () => loadDatasets(true))"
+                    >删除</a-doption
+                  >
                 </template>
               </a-dropdown>
             </div>
@@ -101,6 +170,82 @@ const handleScroll = async (event: UIEvent) => {
         <div class="text-gray-400 my-4">数据已加载完成</div>
       </a-col>
     </a-row>
+    <!--知识库创建/编辑窗口-->
+    <a-modal
+      :width="520"
+      :visible="props.createType === 'dataset' || showUpdateModal"
+      hide-title
+      :footer="false"
+      modal-class="rounded-xl"
+      @cancel="handleCancel"
+    >
+      <!--顶部标题-->
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold text-gray-700">
+          {{ props.createType === 'dataset' ? '新建' : '编辑' }}知识库
+        </div>
+        <a-button type="text" class="!text-gray-700" size="small" @click="handleCancel">
+          <template #icon>
+            <icon-close />
+          </template>
+        </a-button>
+      </div>
+      <!--中间表单-->
+      <div class="pt-6">
+        <a-form ref="formRef" :model="form" @submit="handleSubmit" layout="vertical">
+          <!--知识库图标-->
+          <a-form-item
+            field="icon"
+            hide-label
+            :rules="[{ required: true, message: '知识库图标不能为空' }]"
+          >
+            <a-upload
+              v-model="form.icon"
+              :limit="1"
+              list-type="picture-card"
+              accept="image/png, image/jpeg"
+              class="!w-auto mx-auto"
+            />
+          </a-form-item>
+          <!--知识库名称-->
+          <a-form-item
+            field="name"
+            label="知识库名称"
+            asterisk-position="end"
+            :rules="[{ required: true, message: '知识库名称不能为空' }]"
+          >
+            <a-input
+              v-model="form.name"
+              placeholder="请输入知识库名称"
+              show-word-limit
+              :max-length="60"
+            />
+          </a-form-item>
+          <!--知识库描述-->
+          <a-form-item field="description" label="知识库描述" asterisk-position="end">
+            <a-textarea
+              v-model="form.description"
+              :auto-size="{ minRows: 4, maxRows: 6 }"
+              placeholder="请输入知识库描述"
+            />
+          </a-form-item>
+          <!--底部按钮-->
+          <div class="flex items-center justify-between">
+            <div class=""></div>
+            <a-space :size="16">
+              <a-button class="!rounded-lg" @click="handleCancel">取消</a-button>
+              <a-button
+                :loading="submitLoading"
+                type="primary"
+                html-type="submit"
+                class="!rounded-lg"
+                >保存</a-button
+              >
+            </a-space>
+          </div>
+        </a-form>
+      </div>
+    </a-modal>
   </a-spin>
 </template>
 
