@@ -3,6 +3,7 @@ import type {
   CreateDatasetRequest,
   GetDatasetResponse,
   GetDatasetsWithPageResponse,
+  GetDocumentsWithPageRequest,
 } from '@/models/dataset.ts'
 import type { BaseResponse } from '@/models/base.ts'
 
@@ -39,4 +40,18 @@ export const updateDataset = (dataset_id: string, req: CreateDatasetRequest) => 
 // 删除知识库
 export const deleteDataset = (dataset_id: string) => {
   return post<BaseResponse<any>>(`/datasets/${dataset_id}/delete`)
+}
+
+// 获取文档列表分页
+export const getDocumentsWithPage = (
+  dataset_id: string,
+  req: GetDocumentsWithPageRequest = {
+    current_page: 1,
+    page_size: 20,
+    search_word: '',
+  },
+) => {
+  return get<GetDatasetsWithPageResponse>(`/datasets/${dataset_id}/documents`, {
+    params: req,
+  })
 }

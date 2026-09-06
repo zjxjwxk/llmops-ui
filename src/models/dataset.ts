@@ -40,3 +40,25 @@ export type GetDatasetResponse = BaseResponse<{
   updated_at: number
   created_at: number
 }>
+
+// 获取文档列表分页请求
+export type GetDocumentsWithPageRequest = {
+  current_page: number
+  page_size: number
+  search_word: string
+}
+
+// 获取文档列表分页响应
+export type GetDocumentsWithPageResponse = BasePaginatorResponse<{
+  id: string
+  name: string
+  character_count: number
+  hit_count: number
+  position: number
+  enabled: boolean
+  disabled_at: number
+  status: string
+  error: string
+  updated_at: number
+  created_at: number
+}>

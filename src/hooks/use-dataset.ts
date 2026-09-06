@@ -3,7 +3,9 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import {
   createDataset,
   deleteDataset,
+  getDataset,
   getDatasetsWithPage,
+  getDocumentsWithPage,
   updateDataset,
 } from '@/services/dataset.ts'
 import { Form, Message, Modal } from '@arco-design/web-vue'
@@ -25,7 +27,7 @@ export const useGetDatasetsWithPage = () => {
   const loadDatasets = async (init: boolean = false) => {
     // 检测是否需要初始化分页器
     if (init) {
-      initPaginator()
+      Object.assign(paginator, defaultPaginator)
     } else if (!init && paginator.current_page > paginator.total_page) {
       // 检测是否还有更多数据需要加载
       return
@@ -43,7 +45,7 @@ export const useGetDatasetsWithPage = () => {
       const data = resp.data
 
       // 更新分页器
-      updatePaginator(data)
+      Object.assign(paginator, data.paginator)
 
       // 判断是否存在更多数据
       if (paginator.current_page <= paginator.total_page) {
@@ -60,16 +62,6 @@ export const useGetDatasetsWithPage = () => {
     } finally {
       loading.value = false
     }
-  }
-
-  // 初始化分页器
-  const initPaginator = () => {
-    Object.assign(paginator, defaultPaginator)
-  }
-
-  // 更新分页器
-  const updatePaginator = (data: any) => {
-    Object.assign(paginator, data.paginator)
   }
 
   // 页面加载时初始化数据
@@ -144,4 +136,93 @@ export const useCreateOrUpdateDataset = () => {
   }
 
   return { loading, form, formRef, showUpdateModal, updateShowUpdateModal, saveDataset }
+}
+
+export const useGetDataset = (dataset_id: string) => {
+  const loading = ref(false)
+  const dataset = reactive<any>({})
+
+  // 加载知识库详情
+  const loadDataset = async (dataset_id: string) => {
+    try {
+      loading.value = true
+      const resp = await getDataset(dataset_id)
+      const data = resp.data
+      Object.assign(dataset, data)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 页面加载时初始化数据
+  onMounted(async () => {
+    await loadDataset(dataset_id)
+  })
+
+  return { loading, dataset, loadDataset }
+}
+
+export const useGetDocumentsWithPage = (dataset_id: string) => {
+  const route = useRoute()
+  const loading = ref(false)
+  const documents = reactive<Array<any>>([])
+  const defaultPaginator = {
+    current_page: 1,
+    page_size: 20,
+    total_page: 0,
+    total_record: 0,
+  }
+  const paginator = reactive({ ...defaultPaginator })
+
+  // 加载文档列表
+  const loadDocuments = async (init: boolean = false) => {
+    // 检测是否需要初始化分页器
+    if (init) {
+      Object.assign(paginator, defaultPaginator)
+    } else if (!init && paginator.current_page > paginator.total_page) {
+      // 检测是否还有更多数据需要加载
+      return
+    }
+
+    // 加载更多数据
+    try {
+      loading.value = true
+      const resp = await getDocumentsWithPage(dataset_id, {
+        current_page: Number(route.query?.current_page || paginator.current_page),
+        page_size: Number(route.query?.page_size || paginator.page_size),
+        search_word: String(route.query?.search_word ?? ''),
+      })
+      const data = resp.data
+
+      // 更新分页器
+      Object.assign(paginator, data.paginator)
+
+      // 列表分页直接覆盖数据
+      documents.splice(0, documents.length, ...data.list)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 页面加载时初始化数据
+  onMounted(async () => {
+    await loadDocuments(true)
+  })
+
+  // 监听路由变化
+  watch(
+    () => route.query,
+    async (newQuery, oldQuery) => {
+      if (newQuery.search_word != oldQuery.search_word) {
+        await loadDocuments(true)
+      } else if (
+        newQuery.current_page != oldQuery.current_page ||
+        newQuery.page_size != oldQuery.page_size
+      ) {
+        await loadDocuments()
+      }
+    },
+  )
+
+  return { loading, documents, paginator, loadDocuments }
 }

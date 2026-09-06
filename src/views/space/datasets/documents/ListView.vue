@@ -1,34 +1,12 @@
 <script setup lang="ts">
 import moment from 'moment'
+import { useRoute, useRouter } from 'vue-router'
+import { useGetDataset, useGetDocumentsWithPage } from '@/hooks/use-dataset.ts'
 
-const documents = [
-  {
-    character_count: 17684,
-    created_at: 1785909687,
-    disabled_at: 0,
-    enabled: true,
-    error: '',
-    hit_count: 34,
-    id: '72138bae-0742-4ae4-90a6-47e6f2ed7ed0',
-    name: 'LLMOps 项目提示词大全',
-    position: 2,
-    status: 'completed',
-    updated_at: 1785909687,
-  },
-  {
-    character_count: 6873,
-    created_at: 1785753109,
-    disabled_at: 0,
-    enabled: false,
-    error: '',
-    hit_count: 24,
-    id: '0072659a-60c3-43c6-bce5-199828bcf063',
-    name: 'LLMOps 项目API文档',
-    position: 1,
-    status: 'completed',
-    updated_at: 1785753109,
-  },
-]
+const route = useRoute()
+const router = useRouter()
+const { dataset } = useGetDataset(route.params?.dataset_id)
+const { loading, documents, paginator } = useGetDocumentsWithPage(route.params?.dataset_id)
 </script>
 
 <template>
@@ -46,24 +24,25 @@ const documents = [
       <!--右侧知识库信息-->
       <div class="flex items-center gap-3">
         <!--知识库图标-->
-        <a-avatar
-          :size="40"
-          shape="square"
-          class="rounded-lg"
-          image-url="https://picsum.photos/400"
-        />
+        <a-avatar :size="40" shape="square" class="rounded-lg" :image-url="dataset.icon" />
         <!--知识库信息-->
         <div class="flex flex-col justify-between h-[40px]">
-          <div class="text-gray-700">知识库 / LLMOps项目知识库</div>
-          <div class="flex items-center gap-2">
+          <a-skeleton-line v-if="!dataset?.name" :widths="[100]" />
+          <div v-else class="text-gray-700">知识库 / {{ dataset.name }}</div>
+          <div v-if="!dataset?.name" class="flex items-center gap-2">
+            <a-skeleton-line :widths="[60]" :line-height="18" />
+            <a-skeleton-line :widths="[60]" :line-height="18" />
+            <a-skeleton-line :widths="[60]" :line-height="18" />
+          </div>
+          <div v-else class="flex items-center gap-2">
             <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-              >10 文档</a-tag
+              >{{ dataset.document_count }} 文档</a-tag
             >
             <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-              >154 命中</a-tag
+              >{{ dataset.hit_count }} 命中</a-tag
             >
             <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-              >14 关联应用</a-tag
+              >{{ dataset.related_app_count }} 关联应用</a-tag
             >
           </div>
         </div>
@@ -73,8 +52,17 @@ const documents = [
     <div class="flex items-center justify-between mb-6">
       <!--左侧搜索框-->
       <a-input-search
+        :default-value="route.query?.search_word || ''"
         placeholder="请输入文档关键词"
         class="!w-[240px] bg-white rounded-lg border-gray-200"
+        @search="
+          (value: string) => {
+            router.push({
+              path: route.path,
+              query: { search_word: value, current_page: 1 },
+            })
+          }
+        "
       />
       <!--右侧按钮-->
       <a-space :size="12">
@@ -88,14 +76,24 @@ const documents = [
       <a-table
         hoverable
         :pagination="{
-          total: 50,
-          current: 1,
+          total: paginator.total_record,
+          current: paginator.current_page,
           defaultCurrent: 1,
-          pageSize: 20,
+          pageSize: paginator.page_size,
           defaultPageSize: 20,
+          showTotal: true,
         }"
+        :loading="loading"
         :data="documents"
         :bordered="{ wrapper: false }"
+        @page-change="
+          (current_page: number) => {
+            router.push({
+              path: route.path,
+              query: { ...route.query, current_page: current_page },
+            })
+          }
+        "
       >
         <template #columns>
           <a-table-column
