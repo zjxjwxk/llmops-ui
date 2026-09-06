@@ -3,10 +3,12 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import {
   createDataset,
   deleteDataset,
+  deleteDocument,
   getDataset,
   getDatasetsWithPage,
   getDocumentsWithPage,
   updateDataset,
+  updateDocumentEnabled,
 } from '@/services/dataset.ts'
 import { Form, Message, Modal } from '@arco-design/web-vue'
 
@@ -225,4 +227,44 @@ export const useGetDocumentsWithPage = (dataset_id: string) => {
   )
 
   return { loading, documents, paginator, loadDocuments }
+}
+
+export const useDeleteDocument = () => {
+  const handleDelete = (dataset_id: string, document_id: string, callback?: () => void) => {
+    Modal.warning({
+      title: '是否确认删除此文档？',
+      content:
+        '该操作无法撤销，所有该文档下的片段都将被永久删除，AI 应用将无法使用该文档，如需暂时关闭文档，请使用禁用功能。',
+      hideCancel: false,
+      onOk: async () => {
+        try {
+          const resp = await deleteDocument(dataset_id, document_id)
+          Message.success(resp.message)
+        } finally {
+          // 调用回调函数
+          callback && callback()
+        }
+      },
+    })
+  }
+
+  return { handleDelete }
+}
+
+export const useUpdateDocumentEnabled = () => {
+  const handleUpdateEnabled = async (
+    dataset_id: string,
+    document_id: string,
+    enabled: boolean,
+    callback?: () => void,
+  ) => {
+    try {
+      const resp = await updateDocumentEnabled(dataset_id, document_id, enabled)
+      Message.success(resp.message)
+    } finally {
+      callback && callback()
+    }
+  }
+
+  return { handleUpdateEnabled }
 }

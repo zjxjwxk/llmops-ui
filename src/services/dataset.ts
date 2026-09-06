@@ -3,7 +3,10 @@ import type {
   CreateDatasetRequest,
   GetDatasetResponse,
   GetDatasetsWithPageResponse,
+  GetDocumentResponse,
   GetDocumentsWithPageRequest,
+  GetDocumentsWithPageResponse,
+  UpdateDatasetRequest,
 } from '@/models/dataset.ts'
 import type { BaseResponse } from '@/models/base.ts'
 
@@ -31,7 +34,7 @@ export const getDataset = (dataset_id: string) => {
 }
 
 // 更新知识库
-export const updateDataset = (dataset_id: string, req: CreateDatasetRequest) => {
+export const updateDataset = (dataset_id: string, req: UpdateDatasetRequest) => {
   return post<BaseResponse<any>>(`/datasets/${dataset_id}`, {
     body: req,
   })
@@ -51,7 +54,35 @@ export const getDocumentsWithPage = (
     search_word: '',
   },
 ) => {
-  return get<GetDatasetsWithPageResponse>(`/datasets/${dataset_id}/documents`, {
+  return get<GetDocumentsWithPageResponse>(`/datasets/${dataset_id}/documents`, {
     params: req,
+  })
+}
+
+// 获取文档详情
+export const getDocument = (dataset_id: string, document_id: string) => {
+  return get<GetDocumentResponse>(`/datasets/${dataset_id}/documents/${document_id}`)
+}
+
+// 更新文档启用状态
+export const updateDocumentEnabled = (
+  dataset_id: string,
+  document_id: string,
+  enabled: boolean,
+) => {
+  return post<BaseResponse<any>>(`/datasets/${dataset_id}/documents/${document_id}/enabled`, {
+    body: { enabled },
+  })
+}
+
+// 删除文档
+export const deleteDocument = (dataset_id: string, document_id: string) => {
+  return post<BaseResponse<any>>(`/datasets/${dataset_id}/documents/${document_id}/delete`)
+}
+
+// 更新文档名称
+export const updateDocumentName = (dataset_id: string, document_id: string, name: string) => {
+  return post<BaseResponse<any>>(`/datasets/${dataset_id}/documents/${document_id}/name`, {
+    body: { name },
   })
 }

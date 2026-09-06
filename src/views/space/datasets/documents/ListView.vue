@@ -1,12 +1,26 @@
 <script setup lang="ts">
 import moment from 'moment'
 import { useRoute, useRouter } from 'vue-router'
-import { useGetDataset, useGetDocumentsWithPage } from '@/hooks/use-dataset.ts'
+import {
+  useDeleteDocument,
+  useGetDataset,
+  useGetDocumentsWithPage,
+  useUpdateDocumentEnabled,
+} from '@/hooks/use-dataset.ts'
+import UpdateDocumentNameModal from '@/views/space/datasets/documents/components/UpdateDocumentNameModal.vue'
+import { ref } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
-const { dataset } = useGetDataset(route.params?.dataset_id)
-const { loading, documents, paginator } = useGetDocumentsWithPage(route.params?.dataset_id)
+const updateDocumentNameModalVisible = ref(false)
+const updateDatasetID = ref('')
+const updateDocumentID = ref('')
+const { dataset, loadDataset } = useGetDataset(route.params?.dataset_id as string)
+const { loading, documents, paginator, loadDocuments } = useGetDocumentsWithPage(
+  route.params?.dataset_id as string,
+)
+const { handleUpdateEnabled } = useUpdateDocumentEnabled()
+const { handleDelete } = useDeleteDocument()
 </script>
 
 <template>
@@ -168,12 +182,35 @@ const { loading, documents, paginator } = useGetDocumentsWithPage(route.params?.
             cell-class="bg-transparent"
             :width="100"
           >
-            <template #cell="{ record }">
+            <template #cell="{ record, rowIndex }">
               <a-space :size="0">
                 <template #split>
                   <a-divider direction="vertical" />
                 </template>
-                <a-switch size="small" type="round" default-checked />
+                <a-tooltip
+                  v-if="record.status === 'error'"
+                  :content="`文档解析失败：${record.error}，无法启用`"
+                >
+                  <a-switch size="small" type="round" :default-checked="false" disabled />
+                </a-tooltip>
+                <a-switch
+                  v-else
+                  size="small"
+                  type="round"
+                  :model-value="record.enabled"
+                  @change="
+                    (enabled: string | number | boolean) => {
+                      handleUpdateEnabled(
+                        route.params?.dataset_id as string,
+                        record.id,
+                        enabled as boolean,
+                        async () => {
+                          documents[rowIndex].enabled = enabled
+                        },
+                      )
+                    }
+                  "
+                />
                 <a-dropdown position="br">
                   <a-button type="text" size="small" class="!text-gray-700">
                     <template #icon>
@@ -181,8 +218,27 @@ const { loading, documents, paginator } = useGetDocumentsWithPage(route.params?.
                     </template>
                   </a-button>
                   <template #content>
-                    <a-doption>重命名</a-doption>
-                    <a-doption class="!text-red-700">删除</a-doption>
+                    <a-doption
+                      @click="
+                        () => {
+                          updateDocumentNameModalVisible = true
+                          updateDatasetID = route.params?.dataset_id as string
+                          updateDocumentID = record.id
+                        }
+                      "
+                      >重命名</a-doption
+                    >
+                    <a-doption
+                      class="!text-red-700"
+                      @click="
+                        () =>
+                          handleDelete(route.params?.dataset_id as string, record.id, async () => {
+                            await loadDocuments()
+                            await loadDataset(route.params?.dataset_id as string)
+                          })
+                      "
+                      >删除</a-doption
+                    >
                   </template>
                 </a-dropdown>
               </a-space>
@@ -191,6 +247,13 @@ const { loading, documents, paginator } = useGetDocumentsWithPage(route.params?.
         </template>
       </a-table>
     </div>
+    <!--更新文档名称模态窗-->
+    <update-document-name-modal
+      v-model:visible="updateDocumentNameModalVisible"
+      :dataset_id="updateDatasetID"
+      :document_id="updateDocumentID"
+      :on-after-update="() => loadDocuments()"
+    />
   </div>
 </template>
 
