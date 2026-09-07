@@ -175,6 +175,58 @@ const handleStream = (response: Response, onData: (data: { [key: string]: any })
   read()
 }
 
+export const upload = <T>(url: string, options = {}): Promise<T> => {
+  // 拼接URL
+  const urlWithPrefix = `${apiPrefix}${url.startsWith('/') ? url : `/${url}`}`
+
+  // 组装XHR请求配置信息
+  const defaultOptions = {
+    method: 'POST',
+    url: urlWithPrefix,
+    headers: {},
+    data: {},
+  }
+  options = {
+    ...defaultOptions,
+    ...options,
+    headers: {...defaultOptions.headers, ...options.headers}
+  }
+
+  // 构建Promise并使用XHR完成上传
+  return new Promise((resolve, reject) => {
+    // 创建XHR服务
+    const xhr = new XMLHttpRequest()
+
+    // 初始化XHR请求
+    xhr.open(options.method, options.url)
+    for (const key in options.headers) {
+      xhr.setRequestHeader(key, options.headers[key])
+    }
+
+    // 设置XHR响应格式
+    xhr.withCredentials = true
+    xhr.responseType = 'json'
+
+    // 监听XHR请求状态变化
+    xhr.onreadystatechange = () => {
+      // 判断XHR状态
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          resolve(xhr.response)
+        } else {
+          reject(xhr)
+        }
+      }
+    }
+
+    // 监听XHR进度
+    xhr.upload.onprogress = options.onprogress
+
+    // 发送XHR请求
+    xhr.send(options.data)
+  })
+}
+
 export const request = <T>(url: string, options = {}) => {
   return baseFetch<T>(url, options)
 }

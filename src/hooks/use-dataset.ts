@@ -107,7 +107,8 @@ export const useCreateOrUpdateDataset = () => {
   // 定义创建和更新需要的数据
   const loading = ref(false)
   const defaultForm = {
-    icon: 'https://picsum.photos/400',
+    fileList: [],
+    icon: '',
     name: '',
     description: '',
   }
@@ -126,10 +127,18 @@ export const useCreateOrUpdateDataset = () => {
     try {
       loading.value = true
       if (dataset_id !== undefined && dataset_id != '') {
-        const resp = await updateDataset(dataset_id, form)
+        const resp = await updateDataset(dataset_id, {
+          icon: form.icon,
+          name: form.name,
+          description: form.description,
+        })
         Message.success(resp.message)
       } else {
-        const resp = await createDataset(form)
+        const resp = await createDataset({
+          icon: form.icon,
+          name: form.name,
+          description: form.description,
+        })
         Message.success(resp.message)
       }
     } finally {

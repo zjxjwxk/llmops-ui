@@ -7,6 +7,7 @@ import {
 } from '@/hooks/use-dataset.ts'
 import { getDataset } from '@/services/dataset.ts'
 import { ValidatedError } from '@arco-design/web-vue'
+import { uploadImage } from '@/services/upload-file.ts'
 
 let updateDatasetID = ''
 const props = defineProps({
@@ -51,6 +52,7 @@ const handleUpdate = (dataset_id: string) => {
 
     // 更新表单数据
     formRef.value?.resetFields()
+    form.fileList = [{ uid: '1', name: '知识库图标', url: data.icon }]
     form.icon = data.icon
     form.name = data.name
     form.description = data.description
@@ -63,6 +65,7 @@ const handleCancel = () => {
     // 重置表单数据
     updateDatasetID = ''
     formRef.value?.resetFields()
+    form.fileList = []
 
     // 隐藏表单模态窗
     emits('update-create-type', '')
@@ -207,11 +210,26 @@ const handleSubmit = async ({ errors }: { errors: Record<string, ValidatedError>
             :rules="[{ required: true, message: '知识库图标不能为空' }]"
           >
             <a-upload
-              v-model="form.icon"
               :limit="1"
               list-type="picture-card"
               accept="image/png, image/jpeg"
               class="!w-auto mx-auto"
+              v-model:file-list="form.fileList"
+              image-preview
+              :custom-request="
+                async (option) => {
+                  const { fileItem, onSuccess, onError } = option
+                  const resp = await uploadImage(fileItem.file)
+                  form.icon = resp.data.image_url
+                  onSuccess(resp)
+                }
+              "
+              :on-before-remove="
+                () => {
+                  form.icon = ''
+                  return true
+                }
+              "
             />
           </a-form-item>
           <!--知识库名称-->
