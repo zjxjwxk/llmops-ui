@@ -175,7 +175,7 @@ const handleStream = (response: Response, onData: (data: { [key: string]: any })
   read()
 }
 
-export const upload = <T>(url: string, options = {}): Promise<T> => {
+export const upload = <T>(url: string, options: any = {}): Promise<T> => {
   // 拼接URL
   const urlWithPrefix = `${apiPrefix}${url.startsWith('/') ? url : `/${url}`}`
 
@@ -189,7 +189,7 @@ export const upload = <T>(url: string, options = {}): Promise<T> => {
   options = {
     ...defaultOptions,
     ...options,
-    headers: {...defaultOptions.headers, ...options.headers}
+    headers: { ...defaultOptions.headers, ...options.headers },
   }
 
   // 构建Promise并使用XHR完成上传
