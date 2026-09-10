@@ -9,6 +9,7 @@ import {
 } from '@/hooks/use-dataset.ts'
 import UpdateDocumentNameModal from '@/views/space/datasets/documents/components/UpdateDocumentNameModal.vue'
 import { ref } from 'vue'
+import HitTestingModal from '@/views/space/datasets/documents/components/HitTestingModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -254,6 +255,8 @@ const { handleDelete } = useDeleteDocument()
       :document_id="updateDocumentID"
       :on-after-update="() => loadDocuments()"
     />
+    <!--召回测试模态窗-->
+    <hit-testing-modal />
   </div>
 </template>
 
