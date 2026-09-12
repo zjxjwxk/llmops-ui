@@ -79,3 +79,48 @@ export type GetDocumentResponse = BaseResponse<{
   updated_at: number
   created_at: number
 }>
+
+// 知识库召回测试请求
+export type HitRequest = {
+  retrieval_strategy: string
+  k: number
+  query: string
+  score: number
+}
+
+// 知识库召回测试响应
+export type HitResponse = BaseResponse<
+  Array<{
+    id: string
+    document: {
+      id: string
+      name: string
+      extension: string
+      mime_type: string
+    }
+    dataset_id: string
+    score: number
+    position: number
+    keywords: string[]
+    character_count: number
+    token_count: number
+    hit_count: number
+    enabled: boolean
+    disabled_at: number
+    status: string
+    error: string
+    updated_at: number
+    created_at: number
+  }>
+>
+
+// 知识库最近查询记录响应
+export type GetDatasetQueriesResponse = BaseResponse<
+  Array<{
+    id: string
+    query: string
+    source: string
+    dataset_id: string
+    created_at: number
+  }>
+>

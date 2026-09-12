@@ -13,6 +13,7 @@ import HitTestingModal from '@/views/space/datasets/documents/components/HitTest
 
 const route = useRoute()
 const router = useRouter()
+const hitTestingModalVisible = ref(false)
 const updateDocumentNameModalVisible = ref(false)
 const updateDatasetID = ref('')
 const updateDocumentID = ref('')
@@ -30,7 +31,7 @@ const { handleDelete } = useDeleteDocument()
     <div class="flex items-center w-full gap-2 mb-6">
       <!--回退按钮-->
       <router-link :to="{ name: 'space-datasets-list' }">
-        <a-button size="mini" type="text" class="!text-gray-700">
+        <a-button size="small" type="text" class="!text-gray-700">
           <template #icon>
             <icon-left />
           </template>
@@ -81,7 +82,7 @@ const { handleDelete } = useDeleteDocument()
       />
       <!--右侧按钮-->
       <a-space :size="12">
-        <a-button class="rounded-lg">召回测试</a-button>
+        <a-button class="rounded-lg" @click="hitTestingModalVisible = true">召回测试</a-button>
         <a-button type="primary" class="rounded-lg">添加文件</a-button>
       </a-space>
     </div>
@@ -200,7 +201,7 @@ const { handleDelete } = useDeleteDocument()
                   type="round"
                   :model-value="record.enabled"
                   @change="
-                    (enabled: string | number | boolean) => {
+                    (enabled) => {
                       handleUpdateEnabled(
                         route.params?.dataset_id as string,
                         record.id,
@@ -256,7 +257,10 @@ const { handleDelete } = useDeleteDocument()
       :on-after-update="() => loadDocuments()"
     />
     <!--召回测试模态窗-->
-    <hit-testing-modal />
+    <hit-testing-modal
+      v-model:visible="hitTestingModalVisible"
+      :dataset_id="route.params?.dataset_id as string"
+    />
   </div>
 </template>
 
