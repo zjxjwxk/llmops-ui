@@ -13,6 +13,7 @@ import moment from 'moment/moment'
 import { useRoute } from 'vue-router'
 import { Form, Message, Modal, ValidatedError } from '@arco-design/web-vue'
 import type { CreateApiToolProviderRequest } from '@/models/api-tool.ts'
+import { uploadImage } from '@/services/upload-file.ts'
 
 const route = useRoute()
 const props = defineProps({
@@ -34,6 +35,7 @@ const form = reactive({
   name: '',
   openapi_schema: '',
   headers: [] as { key: string; value: string }[],
+  fileList: [] as any[],
 })
 const formRef = ref<InstanceType<typeof Form>>(null)
 const shownIndex = ref<number>(-1)
@@ -154,6 +156,7 @@ const handleUpdate = async () => {
 
     // 更新表单
     formRef.value.resetFields()
+    form.fileList = [{ uid: '1', name: '插件图标', url: data.icon }]
     form.icon = data.icon
     form.name = data.name
     form.openapi_schema = data.openapi_schema
@@ -231,6 +234,7 @@ const handleSubmit = async ({
 const handleCancel = () => {
   // 重置表单数据
   formRef.value.resetFields()
+  form.fileList = []
   // 关闭创建/编辑窗口
   emits('update-create-type', '')
   showUpdateModal.value = false
@@ -436,11 +440,26 @@ watch(
             :rules="[{ required: true, message: '插件图标不能为空' }]"
           >
             <a-upload
-              v-model="form.icon"
               :limit="1"
               list-type="picture-card"
               accept="image/png, image/jpeg"
               class="!w-auto mx-auto"
+              v-model:file-list="form.fileList"
+              image-preview
+              :custom-request="
+                async (option) => {
+                  const { fileItem, onSuccess, onError } = option
+                  const resp = await uploadImage(fileItem.file)
+                  form.icon = resp.data.image_url
+                  onSuccess(resp)
+                }
+              "
+              :on-before-remove="
+                () => {
+                  form.icon = ''
+                  return true
+                }
+              "
             />
           </a-form-item>
           <!--插件名称-->
