@@ -89,7 +89,7 @@ const { handleDelete } = useDeleteDocument()
             params: { dataset_id: route.params?.dataset_id as string },
           }"
         >
-          <a-button type="primary" class="!rounded-lg">添加文件</a-button>
+          <a-button type="primary" class="!rounded-lg">添加文档</a-button>
         </router-link>
       </a-space>
     </div>

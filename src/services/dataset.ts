@@ -1,10 +1,13 @@
 import { get, post } from '@/utils/request.ts'
 import type {
   CreateDatasetRequest,
+  CreateDocumentRequest,
+  CreateDocumentResponse,
   GetDatasetQueriesResponse,
   GetDatasetResponse,
   GetDatasetsWithPageResponse,
   GetDocumentResponse,
+  GetDocumentsStatusResponse,
   GetDocumentsWithPageRequest,
   GetDocumentsWithPageResponse,
   HitRequest,
@@ -100,4 +103,16 @@ export const hit = (dataset_id: string, req: HitRequest) => {
 // 知识库最近查询记录
 export const getDatasetQueries = (dataset_id: string) => {
   return get<GetDatasetQueriesResponse>(`/datasets/${dataset_id}/queries`)
+}
+
+// 创建文档
+export const createDocuments = (dataset_id: string, req: CreateDocumentRequest) => {
+  return post<CreateDocumentResponse>(`/datasets/${dataset_id}/documents`, {
+    body: req,
+  })
+}
+
+// 获取文档处理进度
+export const getDocumentsStatus = (dataset_id: string, batch: string) => {
+  return get<GetDocumentsStatusResponse>(`/datasets/${dataset_id}/documents/batch/${batch}`)
 }

@@ -124,3 +124,54 @@ export type GetDatasetQueriesResponse = BaseResponse<
     created_at: number
   }>
 >
+
+// 创建文档请求
+export type CreateDocumentRequest = {
+  upload_file_ids: string[]
+  process_type: string
+  rule: {
+    pre_process_rules: {
+      id: string
+      enabled: boolean
+    }[]
+    segment: {
+      separators: string[]
+      chunk_size: number
+      chunk_overlap: number
+    }
+  }
+}
+
+// 创建文档响应
+export type CreateDocumentResponse = BaseResponse<{
+  batch: string
+  documents: {
+    id: string
+    name: string
+    status: string
+    created_at: number
+  }[]
+}>
+
+// 获取文档处理进度
+export type GetDocumentsStatusResponse = BaseResponse<
+  Array<{
+    id: string
+    name: string
+    size: number
+    extension: string
+    mime_type: string
+    position: number
+    segment_count: number
+    completed_segment_count: number
+    status: string
+    error: string
+    processing_started_at: number
+    parsing_completed_at: number
+    splitting_completed_at: number
+    indexing_completed_at: number
+    completed_at: number
+    stopped_at: number
+    created_at: number
+  }>
+>
