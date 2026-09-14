@@ -215,6 +215,7 @@ onUnmounted(() => stopTimer())
               >
                 <a-input-tag
                   v-model:model-value="createDocumentsForm.rule.separators"
+                  class="!rounded-lg"
                   placeholder="请输入分段标识符，按下Enter后添加"
                 />
               </a-form-item>
@@ -226,6 +227,7 @@ onUnmounted(() => stopTimer())
               >
                 <a-input-number
                   v-model:model-value="createDocumentsForm.rule.chunk_size"
+                  class="!rounded-lg"
                   :min="100"
                   :max="1000"
                   :step="1"
@@ -241,6 +243,7 @@ onUnmounted(() => stopTimer())
               >
                 <a-input-number
                   v-model:model-value="createDocumentsForm.rule.chunk_overlap"
+                  class="!rounded-lg"
                   :min="0"
                   :max="500"
                   :step="1"

@@ -101,7 +101,7 @@ watch(
         <a-input-search
           v-model="searchWord"
           placeholder="请输入搜索词"
-          class="!w-[240px] bg-white rounded-lg border-gray-300"
+          class="!w-[240px] bg-white !rounded-lg border-gray-300"
           @search="search"
         />
       </div>

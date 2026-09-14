@@ -87,6 +87,7 @@ watch(
         >
           <a-input
             v-model="form.name"
+            class="!rounded-lg"
             placeholder="请输入文档名称"
             show-word-limit
             :max-length="100"

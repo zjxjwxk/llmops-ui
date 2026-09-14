@@ -264,7 +264,7 @@ watch(
     <a-row :gutter="[20, 20]" class="flex-1">
       <!--有数据的UI状态-->
       <a-col v-for="(provider, index) in providers" :key="provider.name" :span="6">
-        <a-card hoverable class="cursor-pointer rounded-lg" @click="shownIndex = index">
+        <a-card hoverable class="cursor-pointer !rounded-lg" @click="shownIndex = index">
           <!--顶部提供商名称-->
           <div class="flex items-center gap-3 mb-3">
             <!--左侧图标-->
@@ -471,6 +471,7 @@ watch(
           >
             <a-input
               v-model="form.name"
+              class="!rounded-lg"
               placeholder="请输入插件名称"
               show-word-limit
               :max-length="60"
@@ -485,6 +486,7 @@ watch(
           >
             <a-textarea
               v-model="form.openapi_schema"
+              class="!rounded-lg"
               :auto-size="{ minRows: 4, maxRows: 6 }"
               placeholder="请输入 OpenAPI Schema"
               @blur="
@@ -541,21 +543,29 @@ watch(
                     :key="idx"
                     class="border-b last:border-0 border-gray-200"
                   >
-                    <td class="p-2 pl-3">
+                    <td class="p-2 pl-3 !rounded-lg">
                       <a-form-item :field="`headers[${idx}].key`" hide-label class="!m-0">
-                        <a-input v-model="header.key" placeholder="请输入请求头的键名" />
+                        <a-input
+                          v-model="header.key"
+                          class="!rounded-lg"
+                          placeholder="请输入请求头的键名"
+                        />
                       </a-form-item>
                     </td>
                     <td class="p-2 pl-3">
                       <a-form-item :field="`headers[${idx}].value`" hide-label class="!m-0">
-                        <a-input v-model="header.value" placeholder="请输入请求头的键值" />
+                        <a-input
+                          v-model="header.value"
+                          class="!rounded-lg"
+                          placeholder="请输入请求头的键值"
+                        />
                       </a-form-item>
                     </td>
                     <td class="p-2 pl-3">
                       <a-button
                         size="mini"
                         type="text"
-                        class="!text-gray-700"
+                        class="!text-gray-700 !rounded-lg"
                         @click="form.headers.splice(idx, 1)"
                       >
                         <template #icon>

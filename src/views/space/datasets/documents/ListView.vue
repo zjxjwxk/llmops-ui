@@ -70,7 +70,7 @@ const { handleDelete } = useDeleteDocument()
       <a-input-search
         :default-value="route.query?.search_word || ''"
         placeholder="请输入文档关键词"
-        class="!w-[240px] bg-white rounded-lg border-gray-200"
+        class="!w-[240px] bg-white !rounded-lg border-gray-200"
         @search="
           (value: string) => {
             router.push({
@@ -221,7 +221,7 @@ const { handleDelete } = useDeleteDocument()
                   "
                 />
                 <a-dropdown position="br">
-                  <a-button type="text" size="small" class="!text-gray-700">
+                  <a-button type="text" size="small" class="!text-gray-700 !rounded-lg">
                     <template #icon>
                       <icon-more />
                     </template>

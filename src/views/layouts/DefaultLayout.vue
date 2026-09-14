@@ -24,7 +24,7 @@ const route = useRoute()
           <!--顶部Logo-->
           <router-link
             to="/home"
-            class="block h-9 w-[110px] mb-5 bg-gray-200 hover:bg-gray-300 transition-all rounded-lg"
+            class="block h-9 w-[110px] mb-5 !bg-gray-200 hover:bg-gray-300 transition-all rounded-lg"
           />
           <!--创建AI应用按钮-->
           <a-button type="primary" long class="!rounded-lg mb-4">

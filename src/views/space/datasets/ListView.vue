@@ -110,7 +110,7 @@ const navigateToDocuments = (dataset_id: string) => {
       <a-col v-for="dataset in datasets" :key="dataset.id" :span="6">
         <a-card
           hoverable
-          class="cursor-pointer rounded-lg"
+          class="cursor-pointer !rounded-lg"
           @click="navigateToDocuments(dataset.id)"
         >
           <!--顶部知识库名称-->
@@ -134,7 +134,7 @@ const navigateToDocuments = (dataset_id: string) => {
               </div>
               <!--操作按钮-->
               <a-dropdown position="br" @click.stop>
-                <a-button type="text" size="small" class="rounded-lg !text-gray-700">
+                <a-button type="text" size="small" class="!rounded-lg !text-gray-700">
                   <template #icon>
                     <icon-more />
                   </template>
@@ -252,6 +252,7 @@ const navigateToDocuments = (dataset_id: string) => {
               placeholder="请输入知识库名称"
               show-word-limit
               :max-length="60"
+              class="!rounded-lg"
             />
           </a-form-item>
           <!--知识库描述-->
@@ -260,6 +261,7 @@ const navigateToDocuments = (dataset_id: string) => {
               v-model="form.description"
               :auto-size="{ minRows: 4, maxRows: 6 }"
               placeholder="请输入知识库描述"
+              class="!rounded-lg"
             />
           </a-form-item>
           <!--底部按钮-->

@@ -58,7 +58,7 @@ onMounted(async () => {
         <div class="flex items-center gap-2">
           <a-button
             :type="category === 'all' ? 'secondary' : 'text'"
-            class="rounded-lg !text-gray-700 px-3"
+            class="!rounded-lg !text-gray-700 px-3"
             @click="category = 'all'"
             >全部</a-button
           >
@@ -66,7 +66,7 @@ onMounted(async () => {
             v-for="item in categories"
             :key="item.category"
             :type="category === item.category ? 'secondary' : 'text'"
-            class="rounded-lg !text-gray-700 px-3"
+            class="!rounded-lg !text-gray-700 px-3"
             @click="category = item.category"
             >{{ item.name }}</a-button
           >
@@ -75,14 +75,14 @@ onMounted(async () => {
         <a-input-search
           v-model="search_word"
           placeholder="请输入插件名称"
-          class="!w-[240px] bg-white rounded-lg border-gray-300"
+          class="!w-[240px] bg-white !rounded-lg border-gray-300"
         />
       </div>
       <!--底部插件列表-->
       <a-row :gutter="[20, 20]" class="flex-1">
         <!--有数据的UI状态-->
         <a-col v-for="(provider, index) in filterProviders" :key="provider.name" :span="6">
-          <a-card hoverable class="cursor-pointer rounded-lg" @click="shownIndex = index">
+          <a-card hoverable class="cursor-pointer !rounded-lg" @click="shownIndex = index">
             <!--顶部提供商名称-->
             <div class="flex items-center gap-3 mb-3">
               <!--左侧图标-->
