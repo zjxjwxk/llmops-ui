@@ -174,7 +174,7 @@ onMounted(async () => {
             <a-card
               v-for="tool in filterProviders[shownIndex].tools"
               :key="tool.name"
-              class="cursor-pointer flex flex-col rounded-xl"
+              class="cursor-pointer flex flex-col !rounded-xl"
             >
               <!--工具名称-->
               <div class="font-bold text-gray-900 mb-2">{{ tool.label }}</div>

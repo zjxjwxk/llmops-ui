@@ -63,7 +63,7 @@ watch(
     :visible="visible"
     hide-title
     :footer="false"
-    modal-class="rounded-xl"
+    modal-class="!rounded-xl"
     @cancel="hideModal"
   >
     <!--顶部标题-->

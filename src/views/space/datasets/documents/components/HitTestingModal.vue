@@ -106,7 +106,7 @@ watch(
       :visible="props.visible"
       hide-title
       :footer="false"
-      modal-class="rounded-xl h-3/4 overflow-auto scrollbar-w-none"
+      modal-class="!rounded-xl h-3/4 overflow-auto scrollbar-w-none"
       @cancel="hideHitTestingModal"
     >
       <!--顶部标题-->
@@ -261,7 +261,7 @@ watch(
       :visible="retrievalSettingModalVisible"
       hide-title
       :footer="false"
-      modal-class="rounded-xl"
+      modal-class="!rounded-xl"
     >
       <!--顶部标题-->
       <div class="flex items-center justify-between">

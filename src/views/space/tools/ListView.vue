@@ -379,7 +379,7 @@ watch(
           <a-card
             v-for="tool in providers[shownIndex].tools"
             :key="tool.name"
-            class="cursor-pointer flex flex-col rounded-xl"
+            class="cursor-pointer flex flex-col !rounded-xl"
           >
             <!--工具名称-->
             <div class="font-bold text-gray-900 mb-2">{{ tool.name }}</div>
@@ -416,7 +416,7 @@ watch(
       :visible="props.createType === 'tool' || showUpdateModal"
       hide-title
       :footer="false"
-      modal-class="rounded-xl"
+      modal-class="!rounded-xl"
       @cancel="handleCancel"
     >
       <!--顶部标题-->

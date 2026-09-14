@@ -194,7 +194,7 @@ const navigateToDocuments = (dataset_id: string) => {
       :visible="props.createType === 'dataset' || showUpdateModal"
       hide-title
       :footer="false"
-      modal-class="rounded-xl"
+      modal-class="!rounded-xl"
       @cancel="handleCancel"
     >
       <!--顶部标题-->
