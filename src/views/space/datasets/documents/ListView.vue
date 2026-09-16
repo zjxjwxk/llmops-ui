@@ -40,7 +40,7 @@ const { handleDelete } = useDeleteDocument()
       <!--右侧知识库信息-->
       <div class="flex items-center gap-3">
         <!--知识库图标-->
-        <a-avatar :size="40" shape="square" class="rounded-lg" :image-url="dataset.icon" />
+        <a-avatar :size="40" shape="square" class="!rounded-lg" :image-url="dataset.icon" />
         <!--知识库信息-->
         <div class="flex flex-col justify-between h-[40px]">
           <a-skeleton-line v-if="!dataset?.name" :widths="[100]" />
@@ -135,9 +135,18 @@ const { handleDelete } = useDeleteDocument()
             cell-class="bg-transparent"
           >
             <template #cell="{ record }">
-              <div class="line-clamp-1">
+              <router-link
+                :to="{
+                  name: 'space-datasets-documents-segments-list',
+                  params: {
+                    dataset_id: route.params?.dataset_id as string,
+                    document_id: record.id as string,
+                  },
+                }"
+                class="!line-clamp-1 hover:text-gray-900"
+              >
                 {{ record.name }}
-              </div>
+              </router-link>
             </template>
           </a-table-column>
           <a-table-column

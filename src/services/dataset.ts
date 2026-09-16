@@ -3,6 +3,7 @@ import type {
   CreateDatasetRequest,
   CreateDocumentRequest,
   CreateDocumentResponse,
+  CreateSegmentRequest,
   GetDatasetQueriesResponse,
   GetDatasetResponse,
   GetDatasetsWithPageResponse,
@@ -10,9 +11,13 @@ import type {
   GetDocumentsStatusResponse,
   GetDocumentsWithPageRequest,
   GetDocumentsWithPageResponse,
+  GetSegmentResponse,
+  GetSegmentsWithPageRequest,
+  GetSegmentsWithPageResponse,
   HitRequest,
   HitResponse,
   UpdateDatasetRequest,
+  UpdateSegmentRequest,
 } from '@/models/dataset.ts'
 import type { BaseResponse } from '@/models/base.ts'
 
@@ -115,4 +120,69 @@ export const createDocuments = (dataset_id: string, req: CreateDocumentRequest) 
 // 获取文档处理进度
 export const getDocumentsStatus = (dataset_id: string, batch: string) => {
   return get<GetDocumentsStatusResponse>(`/datasets/${dataset_id}/documents/batch/${batch}`)
+}
+
+// 获取文档片段列表分页
+export const getSegmentsWithPage = (
+  dataset_id: string,
+  document_id: string,
+  req: GetSegmentsWithPageRequest,
+) => {
+  return get<GetSegmentsWithPageResponse>(
+    `/datasets/${dataset_id}/documents/${document_id}/segments`,
+    {
+      params: req,
+    },
+  )
+}
+
+// 新增文档片段
+export const createSegment = (
+  dataset_id: string,
+  document_id: string,
+  req: CreateSegmentRequest,
+) => {
+  return post<BaseResponse<any>>(`/datasets/${dataset_id}/documents/${document_id}/segments`, {
+    body: req,
+  })
+}
+
+// 删除文档片段
+export const deleteSegment = (dataset_id: string, document_id: string, segment_id: string) => {
+  return post<BaseResponse<any>>(
+    `/datasets/${dataset_id}/documents/${document_id}/segments/${segment_id}/delete`,
+  )
+}
+
+// 更新文档片段
+export const updateSegment = (
+  dataset_id: string,
+  document_id: string,
+  segment_id: string,
+  req: UpdateSegmentRequest,
+) => {
+  return post<BaseResponse<any>>(
+    `/datasets/${dataset_id}/documents/${document_id}/segments/${segment_id}`,
+    { body: req },
+  )
+}
+
+// 更新文档片段启用状态
+export const updateSegmentEnabled = (
+  dataset_id: string,
+  document_id: string,
+  segment_id: string,
+  enabled: boolean,
+) => {
+  return post<BaseResponse<any>>(
+    `/datasets/${dataset_id}/documents/${document_id}/segments/${segment_id}/enabled`,
+    { body: { enabled } },
+  )
+}
+
+// 获取文档片段详情
+export const getSegment = (dataset_id: string, document_id: string, segment_id: string) => {
+  return get<GetSegmentResponse>(
+    `/datasets/${dataset_id}/documents/${document_id}/segments/${segment_id}`,
+  )
 }

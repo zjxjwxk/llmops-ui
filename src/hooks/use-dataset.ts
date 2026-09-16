@@ -4,11 +4,15 @@ import {
   createDataset,
   deleteDataset,
   deleteDocument,
+  deleteSegment,
   getDataset,
   getDatasetsWithPage,
+  getDocument,
   getDocumentsWithPage,
+  getSegmentsWithPage,
   updateDataset,
   updateDocumentEnabled,
+  updateSegmentEnabled,
 } from '@/services/dataset.ts'
 import { Form, Message, Modal } from '@arco-design/web-vue'
 
@@ -243,7 +247,7 @@ export const useDeleteDocument = () => {
     Modal.warning({
       title: '是否确认删除此文档？',
       content:
-        '该操作无法撤销，所有该文档下的片段都将被永久删除，AI 应用将无法使用该文档，如需暂时关闭文档，请使用禁用功能。',
+        '该操作无法撤销，所有该文档下的片段都将被永久删除，AI 应用将无法使用该文档，如需暂时停用该文档，请使用禁用功能。',
       hideCancel: false,
       onOk: async () => {
         try {
@@ -276,4 +280,142 @@ export const useUpdateDocumentEnabled = () => {
   }
 
   return { handleUpdateEnabled }
+}
+
+export const useGetDocument = (dataset_id: string, document_id: string) => {
+  const loading = ref(false)
+  const document = reactive<any>({})
+
+  // 加载文档函数
+  const loadDocument = async (dataset_id: string, document_id: string) => {
+    try {
+      loading.value = true
+      const resp = await getDocument(dataset_id, document_id)
+      const data = resp.data
+
+      Object.assign(document, { ...data })
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 页面DOM加载完毕时加载数据
+  onMounted(async () => await loadDocument(dataset_id, document_id))
+
+  return { loading, document, loadDocument }
+}
+
+export const useGetSegmentsWithPage = (dataset_id: string, document_id: string) => {
+  const route = useRoute()
+  const loading = ref(false)
+  const segments = reactive<Array<any>>([])
+  const defaultPaginator = {
+    current_page: 1,
+    page_size: 20,
+    total_page: 0,
+    total_record: 0,
+  }
+  const paginator = reactive({ ...defaultPaginator })
+
+  // 加载分段列表分页函数
+  const loadSegments = async (init: boolean = false) => {
+    // 判断是否是初始化，如果是的话则先初始化分页器
+    if (init) {
+      Object.assign(paginator, { ...defaultPaginator })
+    } else if (paginator.current_page > paginator.total_page) {
+      return
+    }
+
+    try {
+      // 调用接口获取分段列表分页
+      loading.value = true
+      const resp = await getSegmentsWithPage(dataset_id, document_id, {
+        current_page: paginator.current_page,
+        page_size: paginator.page_size,
+        search_word: String(route.query?.search_word || ''),
+      })
+      const data = resp.data
+
+      // 更新分页器
+      Object.assign(paginator, data.paginator)
+
+      // 判断是否存在更多数据
+      if (paginator.current_page <= paginator.total_page) {
+        paginator.current_page += 1
+      }
+
+      // 初始化时覆盖数据
+      if (init) {
+        segments.splice(0, segments.length, ...data.list)
+      } else {
+        // 否则追加数据
+        segments.push(...data.list)
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 页面DOM加载完毕时初始化数据
+  onMounted(async () => {
+    await loadSegments(true)
+  })
+
+  // 监听路由query的变化
+  watch(
+    () => route.query?.search_word,
+    async () => {
+      await loadSegments(true)
+    },
+  )
+
+  return { loading, segments, paginator, loadSegments }
+}
+
+export const useDeleteSegment = () => {
+  const handleDelete = async (
+    dataset_id: string,
+    document_id: string,
+    segment_id: string,
+    callback?: () => void,
+  ) => {
+    Modal.warning({
+      title: '是否确认删除此片段？',
+      content:
+        '该操作无法撤销，删除片段后，知识库将无法检索到该片段，如需暂时停用该片段，请使用禁用功能。',
+      hideCancel: false,
+      onOk: async () => {
+        try {
+          // 点击确定后向API接口发起请求
+          const resp = await deleteSegment(dataset_id, document_id, segment_id)
+          Message.success(resp.message)
+        } finally {
+          // 调用callback函数执行删除后操作
+          callback && callback()
+        }
+      },
+    })
+  }
+
+  return { handleDelete }
+}
+
+export const useUpdateSegmentEnabled = () => {
+  const handleUpdate = async (
+    dataset_id: string,
+    document_id: string,
+    segment_id: string,
+    enabled: boolean,
+    callback?: () => void,
+  ) => {
+    try {
+      const resp = await updateSegmentEnabled(dataset_id, document_id, segment_id, enabled)
+      Message.success(resp.message)
+    } finally {
+      // 调用callback函数执行更新后操作
+      callback && callback()
+    }
+  }
+
+  return { handleUpdate }
 }
