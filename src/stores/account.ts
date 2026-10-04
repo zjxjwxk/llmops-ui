@@ -1,24 +1,28 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import storage from '@/utils/storage.ts'
 
-// 初始数据
 const initAccount = {
-  name: 'Xinkang',
-  email: 'zjxjwxk@gmail.com',
+  id: '',
+  name: '',
+  email: '',
   avatar: '',
+  last_login_ip: '',
+  last_login_at: 0,
+  created_at: 0,
 }
 
-export const useAccountStore = defineStore('account', () => {
-  // 定义数据
-  const account = ref({ ...initAccount })
+export const useAccountState = defineStore('account', () => {
+  const account = ref(storage.get('account', initAccount))
 
-  // 定义函数
-  function update(params: any) {
-    Object.assign(account.value, params)
+  const update = (params: any) => {
+    account.value = params
+    storage.set('account', params)
   }
 
-  function clear() {
-    account.value = { ...initAccount }
+  const clear = () => {
+    account.value = initAccount
+    storage.remove('account')
   }
 
   return { account, update, clear }
