@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { useCredentialState } from '@/stores/credential.ts'
+import { useCredentialStore } from '@/stores/credential.ts'
 import { useRouter } from 'vue-router'
 import { Message, ValidatedError } from '@arco-design/web-vue'
 import { provider } from '@/services/oauth.ts'
@@ -10,7 +10,7 @@ const errorMessage = ref('')
 const passwordLoading = ref(false)
 const githubLoading = ref(false)
 const loginForm = reactive({ email: '', password: '' })
-const credentialStore = useCredentialState()
+const credentialStore = useCredentialStore()
 const router = useRouter()
 
 // 忘记密码点击事件

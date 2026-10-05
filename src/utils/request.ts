@@ -1,5 +1,7 @@
 import { apiPrefix, httpCode } from '@/config'
 import { Message } from '@arco-design/web-vue'
+import { useCredentialStore } from '@/stores/credential.ts'
+import router from '@/router'
 
 // 超时时间为100秒
 const TIME_OUT = 100000
@@ -29,6 +31,13 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
     baseFetchOptions,
     fetchOptions,
   )
+
+  // 将Local Storage中的Access Token添加到Authorization请求头中
+  const { credential, clear: clearCredential } = useCredentialStore()
+  const access_token = credential.access_token
+  if (access_token) {
+    options.headers.set('Authorization', `Bearer ${access_token}`)
+  }
 
   // 拼接URL
   let urlWithPrefix = `${apiPrefix}${url.startsWith('/') ? url : `/${url}`}`
@@ -78,6 +87,10 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
           const json = await res.json()
           if (json.code === httpCode.success) {
             resolve(json)
+          } else if (json.code === httpCode.unauthorized) {
+            // 用户鉴权失败，清除凭证并跳转到登录页面
+            clearCredential()
+            await router.replace({ path: '/auth/login' })
           } else {
             Message.error(json.message)
             reject(new Error(json.message))
@@ -99,6 +112,13 @@ export const ssePost = async (
 ) => {
   // 组装基础fetch请求配置
   const options = Object.assign({}, baseFetchOptions, { method: 'POST' }, fetchOptions)
+
+  // 将Local Storage中的Access Token添加到Authorization请求头中
+  const { credential } = useCredentialStore()
+  const access_token = credential.access_token
+  if (access_token) {
+    options.headers.set('Authorization', `Bearer ${access_token}`)
+  }
 
   // 拼接URL
   const urlWithPrefix = `${apiPrefix}${url.startsWith('/') ? url : `/${url}`}`
@@ -192,6 +212,13 @@ export const upload = <T>(url: string, options: any = {}): Promise<T> => {
     headers: { ...defaultOptions.headers, ...options.headers },
   }
 
+  // 将Local Storage中的Access Token添加到Authorization请求头中
+  const { credential, clear: clearCredential } = useCredentialStore()
+  const access_token = credential.access_token
+  if (access_token) {
+    options.headers['Authorization'] = `Bearer ${access_token}`
+  }
+
   // 构建Promise并使用XHR完成上传
   return new Promise((resolve, reject) => {
     // 创建XHR服务
@@ -208,11 +235,20 @@ export const upload = <T>(url: string, options: any = {}): Promise<T> => {
     xhr.responseType = 'json'
 
     // 监听XHR请求状态变化
-    xhr.onreadystatechange = () => {
+    xhr.onreadystatechange = async () => {
       // 判断XHR状态
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          resolve(xhr.response)
+          const response = xhr.response
+          if (response.code === httpCode.success) {
+            resolve(response)
+          } else if (response.code === httpCode.unauthorized) {
+            // 用户鉴权失败，清除凭证并跳转到登录页面
+            clearCredential()
+            await router.replace({ path: '/auth/login' })
+          } else {
+            reject(xhr.response)
+          }
         } else {
           reject(xhr)
         }

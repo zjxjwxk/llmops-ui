@@ -3,11 +3,11 @@ import { onMounted } from 'vue'
 import { authorize } from '@/services/oauth.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
-import { useCredentialState } from '@/stores/credential.ts'
+import { useCredentialStore } from '@/stores/credential.ts'
 
 const route = useRoute()
 const router = useRouter()
-const credentialStore = useCredentialState()
+const credentialStore = useCredentialStore()
 
 onMounted(async () => {
   try {
