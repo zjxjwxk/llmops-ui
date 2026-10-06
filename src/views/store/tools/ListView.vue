@@ -86,16 +86,16 @@ onMounted(async () => {
             <!--顶部提供商名称-->
             <div class="flex items-center gap-3 mb-3">
               <!--左侧图标-->
-              <a-avatar :size="40" shape="square" :style="{ backgroundColor: provider.background }">
+              <a-avatar :size="40" shape="square" :style="{ backgroundColor: provider.background }" class="flex-shrink-0">
                 <img
                   :src="`${apiPrefix}/builtin-tools/${provider.name}/icon`"
                   :alt="provider.name"
                 />
               </a-avatar>
               <!--右侧工具信息-->
-              <div class="flex flex-col">
-                <div class="text-base text-gray-900 fount-bold">{{ provider.label }}</div>
-                <div class="text-xs text-gray-500 line-clamp-1">
+              <div class="flex flex-col min-w-0 flex-1">
+                <div class="text-base text-gray-900 fount-bold truncate">{{ provider.label }}</div>
+                <div class="text-xs text-gray-500 truncate">
                   提供商 {{ provider.name }} - {{ provider.tools.length }} 个插件
                 </div>
               </div>
@@ -106,10 +106,10 @@ onMounted(async () => {
             </div>
             <!--提供商发布信息-->
             <div class="flex items-center gap-1.5">
-              <a-avatar :size="18" class="!bg-blue-700">
+              <a-avatar :size="18" class="!bg-blue-700 flex-shrink-0">
                 <icon-user />
               </a-avatar>
-              <div class="text-xs text-gray-400">
+              <div class="text-xs text-gray-400 truncate">
                 Xinkang 发布时间:
                 {{ moment(provider.created_at * 1000).format('YYYY-MM-DD HH:mm') }}
               </div>

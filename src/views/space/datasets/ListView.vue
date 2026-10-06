@@ -156,10 +156,10 @@ const navigateToDocuments = (dataset_id: string) => {
           </div>
           <!--知识库发布信息-->
           <div class="flex items-center gap-1.5">
-            <a-avatar :size="18" class="!bg-blue-700">
+            <a-avatar :size="18" class="!bg-blue-700 flex-shrink-0">
               <icon-user />
             </a-avatar>
-            <div class="text-xs text-gray-400">
+            <div class="text-xs text-gray-400 truncate">
               Xinkang 发布时间:
               {{ moment(dataset.created_at * 1000).format('YYYY-MM-DD HH:mm') }}
             </div>

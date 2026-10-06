@@ -273,11 +273,12 @@ watch(
               shape="square"
               :image-url="provider.icon"
               :style="{ backgroundColor: '#FFFFFF' }"
+              class="flex-shrink-0"
             />
             <!--右侧工具信息-->
-            <div class="flex flex-col">
-              <div class="text-base text-gray-900 fount-bold">{{ provider.name }}</div>
-              <div class="text-xs text-gray-500 line-clamp-1">
+            <div class="flex flex-col min-w-0 flex-1">
+              <div class="text-base text-gray-900 fount-bold truncate">{{ provider.name }}</div>
+              <div class="text-xs text-gray-500 truncate">
                 提供商 {{ provider.name }} - {{ provider.tools.length }} 个插件
               </div>
             </div>
@@ -288,10 +289,10 @@ watch(
           </div>
           <!--提供商发布信息-->
           <div class="flex items-center gap-1.5">
-            <a-avatar :size="18" class="!bg-blue-700">
+            <a-avatar :size="18" class="!bg-blue-700 flex-shrink-0">
               <icon-user />
             </a-avatar>
-            <div class="text-xs text-gray-400">
+            <div class="text-xs text-gray-400 truncate">
               Xinkang 编辑时间:
               {{ moment(provider.created_at * 1000).format('YYYY-MM-DD HH:mm') }}
             </div>
