@@ -165,7 +165,7 @@ const send = async () => {
         <!-- 调试对话输入框 -->
         <div class="w-full flex-shrink-0 flex flex-col">
           <!-- 顶部输入框 -->
-          <div class="px-6 flex items-center gap-4">
+          <div class="px-6 pt-4 flex items-center gap-4">
             <!-- 清除按钮 -->
             <a-button class="flex-shrink-0" type="text" shape="circle" @click="clearMessages">
               <template #icon>
@@ -174,7 +174,7 @@ const send = async () => {
             </a-button>
             <!-- 输入框组件 -->
             <div
-              class="h-[50px] flex items-center gap-2 px-4 flex-1 border border-gray-200 rounded-full"
+              class="h-[50px] flex items-center gap-2 px-4 flex-1 border border-gray-200 rounded-full shadow-[0_-2px_8px_rgba(0,0,0,0.08)]"
             >
               <!-- 输入框 -->
               <input type="text" class="flex-1 outline-0" v-model="query" @keyup.enter="send" />
