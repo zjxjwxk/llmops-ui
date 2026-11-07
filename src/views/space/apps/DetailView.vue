@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { debugApp } from '@/services/app.ts'
 import { useRoute } from 'vue-router'
@@ -9,6 +9,19 @@ const route = useRoute()
 const query = ref('')
 const messages = ref([] as { role: string; content: string }[])
 const isLoading = ref(false)
+const scrollContainer = ref<HTMLElement | null>(null)
+
+// 滚动到底部
+const scrollToBottom = async () => {
+  await nextTick()
+  const el = scrollContainer.value
+  if (el) {
+    el.scrollTop = el.scrollHeight
+  }
+}
+
+// 消息新增或流式内容更新时，自动滚动到底部
+watch(messages, scrollToBottom, { deep: true })
 
 // 消息清除方法
 const clearMessages = () => {
@@ -97,7 +110,10 @@ const send = async () => {
           预览与调试
         </header>
         <!-- 调试对话界面 -->
-        <div class="h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none">
+        <div
+          ref="scrollContainer"
+          class="h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none"
+        >
           <!-- 人类消息 -->
           <div class="flex flex-row gap-2 mb-6" v-for="(message, index) in messages" :key="index">
             <!-- 人类头像 -->
