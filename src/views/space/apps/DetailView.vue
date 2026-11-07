@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { Message } from '@arco-design/web-vue'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { debugApp } from '@/services/app.ts'
 import { useRoute } from 'vue-router'
+
+// 渲染Markdown并过滤危险内容，防止XSS攻击
+const renderMarkdown = (content: string) => {
+  return DOMPurify.sanitize(marked.parse(content) as string)
+}
 
 // 定义交互所需数据
 const route = useRoute()
@@ -10,6 +17,18 @@ const query = ref('')
 const messages = ref([] as { role: string; content: string }[])
 const isLoading = ref(false)
 const scrollContainer = ref<HTMLElement | null>(null)
+const inputRef = ref<HTMLTextAreaElement | null>(null)
+
+// 根据内容自动调整输入框高度（最高120px，超出后内部滚动）
+const resizeInput = () => {
+  const el = inputRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = `${Math.min(el.scrollHeight, 120)}px`
+}
+
+// 输入内容变化时，重新计算输入框高度
+watch(query, () => nextTick(resizeInput))
 
 // 滚动到底部
 const scrollToBottom = async () => {
@@ -81,6 +100,21 @@ const send = async () => {
     isLoading.value = false
   }
 }
+
+// 回车发送消息，Shift+回车换行，输入法组合输入期间不发送
+const handleEnter = (event: KeyboardEvent) => {
+  // 输入法组合输入（如中文候选词确认）期间交给输入法处理
+  if (event.isComposing || event.keyCode === 229) {
+    return
+  }
+  // Shift+回车插入换行
+  if (event.shiftKey) {
+    return
+  }
+  // 阻止默认换行并发送消息
+  event.preventDefault()
+  send()
+}
 </script>
 
 <template>
@@ -137,7 +171,7 @@ const send = async () => {
               <!-- 人类消息框 -->
               <div
                 v-if="message.role === 'human'"
-                class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
+                class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5 whitespace-pre-wrap break-words"
               >
                 {{ message.content }}
               </div>
@@ -146,8 +180,13 @@ const send = async () => {
                 v-else
                 class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
               >
-                {{ message.content }}
-                <div v-if="isLoading && index === messages.length - 1" class="cursor"></div>
+                <div
+                  class="prose prose-sm max-w-none markdown-body"
+                  :class="{
+                    'markdown-streaming': isLoading && index === messages.length - 1,
+                  }"
+                  v-html="renderMarkdown(message.content)"
+                ></div>
               </div>
             </div>
           </div>
@@ -174,10 +213,16 @@ const send = async () => {
             </a-button>
             <!-- 输入框组件 -->
             <div
-              class="h-[50px] flex items-center gap-2 px-4 flex-1 border border-gray-200 rounded-full shadow-[0_-2px_8px_rgba(0,0,0,0.08)]"
+              class="min-h-[50px] py-3 flex items-center gap-2 px-4 flex-1 border border-gray-200 rounded-3xl shadow-[0_-2px_8px_rgba(0,0,0,0.08)]"
             >
               <!-- 输入框 -->
-              <input type="text" class="flex-1 outline-0" v-model="query" @keyup.enter="send" />
+              <textarea
+                ref="inputRef"
+                rows="1"
+                class="flex-1 resize-none outline-0 bg-transparent p-0 leading-6 max-h-[120px] overflow-y-auto scrollbar-w-none"
+                v-model="query"
+                @keydown.enter="handleEnter"
+              ></textarea>
               <!-- 上传文件按钮 -->
               <a-button type="text" shape="circle">
                 <template #icon>
@@ -202,11 +247,21 @@ const send = async () => {
   </div>
 </template>
 
-<style scoped>
-.cursor {
+<style>
+/* 缩小Markdown分割线（<hr>）的上下间距 */
+.markdown-body hr {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+/* 流式输出时，在Markdown内容的末尾追加闪烁光标 */
+.markdown-streaming:empty::after,
+.markdown-streaming > :last-child::after {
+  content: '';
   display: inline-block;
   width: 1px;
   height: 14px;
+  margin-left: 2px;
   background-color: #444444;
   animation: blink 1s step-end infinite;
   vertical-align: middle;
