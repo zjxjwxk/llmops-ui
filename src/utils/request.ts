@@ -136,7 +136,10 @@ export const ssePost = async (
   return handleStream(response, onData)
 }
 
-const handleStream = (response: Response, onData: (data: { [key: string]: any }) => void) => {
+const handleStream = async (
+  response: Response,
+  onData: (data: { [key: string]: any }) => void,
+): Promise<void> => {
   if (!response.ok) {
     throw new Error('网络请求失败')
   }
@@ -145,54 +148,52 @@ const handleStream = (response: Response, onData: (data: { [key: string]: any })
   const reader = response.body?.getReader()
   const decoder = new TextDecoder('utf-8')
 
-  let buffer = ''
-  // 定义read函数读取流式事件响应数据
-  const read = () => {
-    let hasError = false
-    reader?.read().then((result: any) => {
-      if (result.done) {
-        return
-      }
-
-      buffer += decoder.decode(result.value, { stream: true })
-      const lines = buffer.split('\n')
-
-      let event = ''
-      let data = ''
-
-      try {
-        lines.forEach((line) => {
-          line = line.trim()
-          if (line.startsWith('event:')) {
-            event = line.slice(6).trim()
-          } else if (line.startsWith('data:')) {
-            data = line.slice(5).trim()
-          }
-
-          if (line === '') {
-            if (event !== '' && data !== '') {
-              onData({
-                event: event,
-                data: JSON.parse(data),
-              })
-              event = ''
-              data = ''
-            }
-          }
-        })
-        buffer = lines.pop() || ''
-      } catch (e) {
-        hasError = true
-      }
-
-      if (!hasError) {
-        read()
-      }
-    })
+  // 响应体为空时，直接结束
+  if (!reader) {
+    return
   }
 
-  // 调用read函数读取流式事件响应数据
-  read()
+  let buffer = ''
+
+  // 循环读取流式事件响应数据，直到响应结束
+  while (true) {
+    const result = await reader.read()
+    if (result.done) {
+      return
+    }
+
+    buffer += decoder.decode(result.value, { stream: true })
+    const lines = buffer.split('\n')
+
+    let event = ''
+    let data = ''
+
+    try {
+      lines.forEach((line) => {
+        line = line.trim()
+        if (line.startsWith('event:')) {
+          event = line.slice(6).trim()
+        } else if (line.startsWith('data:')) {
+          data = line.slice(5).trim()
+        }
+
+        if (line === '') {
+          if (event !== '' && data !== '') {
+            onData({
+              event: event,
+              data: JSON.parse(data),
+            })
+            event = ''
+            data = ''
+          }
+        }
+      })
+      buffer = lines.pop() || ''
+    } catch {
+      // 解析失败则停止读取，避免后续数据错乱
+      return
+    }
+  }
 }
 
 export const upload = <T>(url: string, options: any = {}): Promise<T> => {
