@@ -1,5 +1,5 @@
 // API请求接口前缀
-export const apiPrefix: string = 'http://localhost:5001'
+export const apiPrefix: string = 'http://161.33.140.139:5001'
 
 // 业务状态码
 export const httpCode = {
