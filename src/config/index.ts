@@ -1,5 +1,5 @@
 // API请求接口前缀
-export const apiPrefix: string = ''
+export const apiPrefix: string = '/api'
 
 // 业务状态码
 export const httpCode = {
