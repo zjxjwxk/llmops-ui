@@ -13,4 +13,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    cors: false, // 禁用 Vite 自带的 CORS 处理，让 OPTIONS 请求能被代理转发
+  },
 })
