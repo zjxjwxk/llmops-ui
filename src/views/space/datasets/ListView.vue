@@ -120,7 +120,7 @@ const navigateToDocuments = (dataset_id: string) => {
               :size="40"
               shape="square"
               :image-url="dataset.icon"
-              :style="{ backgroundColor: '#FFFFFF' }"
+              :style="{ backgroundColor: 'transparent' }"
             />
             <!--右侧知识库信息-->
             <div class="flex flex-1 justify-between">

@@ -29,7 +29,13 @@ const { handleCancelPublish } = useCancelPublish()
         <!--应用容器-->
         <div class="flex items-center gap-3">
           <!--应用图标-->
-          <a-avatar :size="40" shape="square" class="!rounded-lg" :image-url="app.icon" />
+          <a-avatar
+            :size="40"
+            shape="square"
+            class="!rounded-lg"
+            :image-url="app.icon"
+            :style="{ backgroundColor: 'transparent' }"
+          />
           <!--应用信息-->
           <div class="flex flex-col justify-between h-[40px]">
             <a-skeleton-line v-if="loading" :widths="[100]" />

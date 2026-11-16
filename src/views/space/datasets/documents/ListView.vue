@@ -40,7 +40,13 @@ const { handleDelete } = useDeleteDocument()
       <!--右侧知识库信息-->
       <div class="flex items-center gap-3">
         <!--知识库图标-->
-        <a-avatar :size="40" shape="square" class="!rounded-lg" :image-url="dataset.icon" />
+        <a-avatar
+          :size="40"
+          shape="square"
+          class="!rounded-lg"
+          :image-url="dataset.icon"
+          :style="{ backgroundColor: 'transparent' }"
+        />
         <!--知识库信息-->
         <div class="flex flex-col justify-between h-[40px]">
           <a-skeleton-line v-if="!dataset?.name" :widths="[100]" />

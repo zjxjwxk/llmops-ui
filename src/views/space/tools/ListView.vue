@@ -272,7 +272,7 @@ watch(
               :size="40"
               shape="square"
               :image-url="provider.icon"
-              :style="{ backgroundColor: '#FFFFFF' }"
+              :style="{ backgroundColor: 'transparent' }"
               class="flex-shrink-0"
             />
             <!--右侧工具信息-->
